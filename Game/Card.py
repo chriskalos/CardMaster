@@ -8,25 +8,32 @@ class CardClass(Enum):
     MAGE = auto()
     RARE = auto()
 
+class CardColor(Enum):
+    BLUE = auto()
+    GREEN = auto()
+    ORANGE = auto()
+    YELLOW = auto()
+    RED = auto()
+
 class Card(ABC):
-    """A base class representing a card in the game.
+    """An abstract base class representing a card in the game.
 
     Attributes:
         name (str): The name of the card.
         description (str): The description of the card.
         tier (int): The tier of the card (1 to 5)
-        mana_cost (int): The mana cost required to play the card.
         hp (int): The health points of the card.
         attack (int): The attack points of the card.
+        card_class (CardClass): The class of the card (Brawler, Archer, Mage, Rare).
         effect_description (str, optional): The description of the card's special effect.
 
     Methods:
         activate_effect(): Method to activate the card's special effect.
-        attack(target): Method to perform an attack on a target.
+        perform_attack(target): Method to perform an attack on a target.
         die(): Method to handle the card's death.
     """
 
-    def __init__(self, name: str, description: str, tier: int, hp: int, attack: int, card_class: CardClass, effect_description: Optional[str] = "No special effect"):
+    def __init__(self, name: str, description: str, tier: int, hp: int, attack: int, card_class: CardClass, color: CardColor, effect_description: Optional[str] = "No special effect"):
         if not isinstance(name, str):
             raise TypeError("Name must be a string.")
         if not isinstance(description, str):
@@ -48,6 +55,7 @@ class Card(ABC):
         self.hp = hp
         self.attack = attack
         self.card_class = CardClass(card_class)
+        self.color = CardColor(color)
         self.effect_description = effect_description
 
     @abstractmethod
@@ -64,6 +72,20 @@ class Card(ABC):
         """Method to handle the card's death"""
         print(f"{self.name} has died.")
 
+    def get_card_info(self):
+        return (
+            f"-=| Card Information| =-\n"
+            f"Name: {self.name}\n"
+            f"Description: {self.description}\n"
+            f"Tier: {self.tier}\n"
+            f"HP: {self.hp}\n"
+            f"Attack: {self.attack}\n"
+            f"Card Class: {self.card_class.name}\n"
+            f"Color: {self.color.name}\n"
+            f"Effect Description: {self.effect_description}\n\n"
+        )
+
+# Cards without effects need to be instantiated using SimpleCard
 class SimpleCard(Card):
     def activate_effect(self):
         """This card has no special effect."""
@@ -88,19 +110,17 @@ class Rasmus(Card):
 
 # List of all cards
 cards_list = [
-    SimpleCard("Greg", "Ooga booga", 1, 1, 5, CardClass.BRAWLER),
-    SimpleCard("Grog", "Unga bunga", 1, 4, 2, CardClass.BRAWLER),
-    Grag("Grag", "Gonk gonk", 1, 1, 2, CardClass.BRAWLER, "Heals a selected unit by 2 HP out of the kindness of his heart"),
-    Pew("Pew", "Pew pew", 1, 1, 1, CardClass.ARCHER, "Deals 2 damage to a selected unit. Pew pew pew!"),
-    Rasmus("Rasmus", "I am Rasmus the Almighty. Tremble before me.", 1, 2, 2, CardClass.MAGE, "Makes a selected unit attack again by inspiring them with his greatness")
+    SimpleCard("Greg", "Ooga booga", 1, 1, 5, CardClass.BRAWLER, CardColor.BLUE),
+    SimpleCard("Grog", "Unga bunga", 1, 4, 2, CardClass.BRAWLER, CardColor.BLUE),
+    Grag("Grag", "Gonk gonk", 1, 1, 2, CardClass.BRAWLER, CardColor.BLUE, "Heals the unit to his left by 2 HP out of the kindness of his heart"),
+    Pew("Pew", "Pew pew", 1, 1, 1, CardClass.ARCHER, CardColor.BLUE, "Deals 2 damage to the unit in front of him. Pew pew pew!"),
+    Rasmus("Rasmus", "I am Rasmus the Almighty. Tremble before me.", 1, 2, 2, CardClass.MAGE, CardColor.BLUE, "Inspires the unit to his left to attack twice")
 ]
 
-for card in cards_list:
-    print(f"Name: {card.name}")
-    print(f"Description: {card.description}")
-    print(f"Tier: {card.tier}")
-    print(f"HP: {card.hp}")
-    print(f"Attack: {card.attack}")
-    print(f"Card Class: {card.card_class.name}")
-    print(f"Effect Description: {card.effect_description}")
-    print()
+def print_cards():
+    for card in cards_list:
+        print(card.get_card_info())
+        print()
+
+# Debugging
+# print_cards()
