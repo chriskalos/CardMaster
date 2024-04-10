@@ -1,0 +1,16 @@
+# Ignore compiled Python files
+*.pyc
+Game/__pycache__/
+
+# Ignore PyGame build files
+build/
+dist/
+*.egg-info/
+
+# Ignore PyGame log files
+*.log
+
+# Ignore PyGame temporary files
+*.swp
+*.swo
+*.bak

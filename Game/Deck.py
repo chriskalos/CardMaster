@@ -21,10 +21,17 @@ class Deck:
         """Generate a deck of 25 cards randomly picked from the available card list."""
         self.cards = random.choices(cards_list, k=deck_size)
         self.shuffle()  # Optional: Shuffle the deck after generation
+    
+    def get_deck_info(self):
+        """Return a string of the current deck information."""
+        deck_info = ""
+        for card in self.cards:
+            deck_info += card.get_card_info()
+        return deck_info
 
-# Example usage
-deck = Deck()
-deck.generate_deck()
-print(f"Deck has {len(deck.cards)} cards.")
-for i in range(5):  # Draw some cards to see what we got
-    print(deck.draw().get_card_info())
+# # Example usage
+# deck = Deck()
+# deck.generate_deck()
+# print(f"Deck has {len(deck.cards)} cards.")
+# for i in range(5):  # Draw some cards to see what we got
+#     print(deck.draw().get_card_info())
