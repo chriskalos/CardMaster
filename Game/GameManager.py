@@ -2,11 +2,12 @@ from Deck import Deck  # Make sure to import the Deck class
 
 class GameManager:
     def __init__(self):
-        self.matches = 0
-        self.tier = 1
+        self.matches = 1
+        self.tier = 5
         self.player_wins = 0
         self.player_losses = 0
         self.player_deck = None
+        self.enemy_deck = None # todo: Enemy deck will change every match
 
     def increase_match(self):
         """Increase the match count and adjust tier accordingly."""
@@ -21,8 +22,18 @@ class GameManager:
     def instantiate_player_deck(self):
         """Instantiate the player's deck from the Deck class."""
         self.player_deck = Deck()
-        self.player_deck.generate_deck()
-        print
+        self.player_deck.generate_player_deck()
+
+    def instantiate_enemy_deck(self):
+        """Instantiate the enemy's deck from the Deck class."""
+        print("DEBUG: Generating enemy deck")
+        print(f"DEBUG: Matches: {self.matches}, Tier: {self.tier}")
+        self.enemy_deck = Deck()
+        self.enemy_deck.generate_enemy_deck(self.matches, self.tier)
+
+    def update_enemy_deck(self, new_enemy_deck: Deck):
+        """Update the enemy's deck with a new deck."""
+        self.enemy_deck = new_enemy_deck
 
     def record_win(self):
         """Record a win for the player."""

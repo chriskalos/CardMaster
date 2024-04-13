@@ -114,7 +114,15 @@ cards_list = [
     SimpleCard("Grog", "Unga bunga", 1, 4, 2, CardClass.BRAWLER),
     Grag("Grag", "Gonk gonk", 1, 1, 2, CardClass.BRAWLER, "Heals the unit to his left by 2 HP out of the kindness of his heart"),
     Pew("Pew", "Pew pew", 1, 1, 1, CardClass.ARCHER, "Deals 2 damage to the unit in front of him. Pew pew pew!"),
-    Rasmus("Rasmus", "I am Rasmus the Almighty. Tremble before me.", 1, 2, 2, CardClass.MAGE, "Inspires the unit to his left to attack twice")
+    Rasmus("Rasmus", "I am Rasmus the Almighty. Tremble before me.", 1, 2, 2, CardClass.MAGE, "Inspires the unit to his left to attack twice"),
+    SimpleCard("Greg", "Ooga booga", 2, 1, 5, CardClass.BRAWLER),
+    SimpleCard("Greg", "Ooga booga", 2, 1, 5, CardClass.RARE),
+    SimpleCard("Greg", "Ooga booga", 3, 1, 5, CardClass.BRAWLER),
+    SimpleCard("Greg", "Ooga booga", 3, 1, 5, CardClass.RARE),
+    SimpleCard("Greg", "Ooga booga", 4, 1, 5, CardClass.BRAWLER),
+    SimpleCard("Greg", "Ooga booga", 4, 1, 5, CardClass.RARE),
+    SimpleCard("Greg", "Ooga booga", 5, 1, 5, CardClass.BRAWLER),
+    SimpleCard("Greg", "Ooga booga", 5, 1, 5, CardClass.RARE)
 ]
 
 def print_cards():

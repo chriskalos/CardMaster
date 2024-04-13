@@ -61,7 +61,7 @@ def draw_card(screen, card, x, y):
 def draw_deck():
     screen.fill((0, 140, 60))  # Clear the screen
     card_x, card_y = 50, 50  # Start position for the first card
-    for card in game_manager.player_deck.cards:
+    for card in game_manager.player_deck.cards: # type: ignore (suppress warnings from IDE)
         draw_card(screen, card, card_x, card_y)
         card_x += 110  # Move to the right for the next card
         if card_x + 100 > 800:  # Check if we need to wrap to the next row
