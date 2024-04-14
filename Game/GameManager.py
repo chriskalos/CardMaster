@@ -1,13 +1,14 @@
-from Deck import Deck  # Make sure to import the Deck class
+from Deck import Deck
+from Player import Player
 
 class GameManager:
     def __init__(self):
         self.matches = 1
-        self.tier = 5
+        self.tier = 1
         self.player_wins = 0
         self.player_losses = 0
-        self.player_deck = None
-        self.enemy_deck = None # todo: Enemy deck will change every match
+        self.player_deck = Deck()
+        self.enemy_deck = Deck() # todo: Enemy deck will change every match
 
     def increase_match(self):
         """Increase the match count and adjust tier accordingly."""
