@@ -4,7 +4,9 @@ import pygame
 pygame.init()
 
 # Set up the display
-screen = pygame.display.set_mode((1920, 1080))
+window_width = 1920
+window_height = 1080
+screen = pygame.display.set_mode((window_width, window_height))
 fps = 60
 pygame.display.set_caption('Card Game')
 
@@ -155,11 +157,6 @@ def draw_deck(screen, deck, x, y, start_index=0):
         index = start_index + i
         draw_card(screen, card, x + i * card_spacing, y, animation_states, index)
 
-player_deck_x = 100
-player_deck_y = 600
-enemy_deck_x = 100
-enemy_deck_y = 100
-
 # Main game loop
 running = True
 while running:
@@ -167,8 +164,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     screen.fill((59, 178, 115))  # Background color
-    draw_deck(screen, game_manager.player_deck, 100, 600, 0)
-    draw_deck(screen, game_manager.enemy_deck, 100, 100, len(game_manager.player_deck.cards))
+    draw_deck(screen, game_manager.player_deck, window_width // 8, window_height * 3 // 4 - 75, 0)
+    draw_deck(screen, game_manager.enemy_deck, window_width // 8, window_height // 4 + 75, len(game_manager.player_deck.cards))
     clock.tick(fps)
     pygame.display.update()
 
