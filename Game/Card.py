@@ -1,6 +1,9 @@
+import os
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Optional
+from PySide6.QtGui import QPixmap, QImage
+
 
 class CardClass(Enum):
     BRAWLER = auto()
@@ -26,6 +29,7 @@ class Card(ABC):
         attack (int): The attack points of the card.
         card_class (CardClass): The class of the card (Brawler, Archer, Mage, Rare).
         effect_description (str, optional): The description of the card's special effect.
+        image (QPixmap): The image of the card.
 
     Methods:
         activate_effect(): Method to activate the card's special effect.
@@ -48,6 +52,8 @@ class Card(ABC):
             raise TypeError("Attack must be an integer.")
         if not isinstance(card_class, CardClass):
             raise TypeError("Card class must be an instance of CardClass.")
+        if not isinstance(effect_description, str):
+            raise TypeError("Effect description must be a string.")
         
         self.name = name
         self.description = description
@@ -57,6 +63,13 @@ class Card(ABC):
         self.card_class = CardClass(card_class)
         self.color = CardColor(list(CardColor)[tier-1])
         self.effect_description = effect_description
+        # Correctly form the path to the image
+        image_path = os.path.join(os.getcwd(), 'img', f'{self.name.lower()}.png')
+        self.image = QImage(str(image_path))
+        # if self.image.isNull():
+        #     print(f"Failed to load image from {image_path}")
+        # else:
+        #     print(f"Image loaded successfully from {image_path}")
 
     @abstractmethod
     def activate_effect(self):

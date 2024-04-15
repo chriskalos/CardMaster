@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip
 from PySide6.QtCore import QTimer, Qt, QRect, QPoint
-from PySide6.QtGui import QPainter, QColor, QFont, QPixmap
+from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette
 from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
 
 class CardGameUI(QWidget):
@@ -9,10 +9,44 @@ class CardGameUI(QWidget):
         super().__init__()
         self.initUI()
 
+        # Tooltip stuff
+        self.tooltip = CustomTooltip(self)
+        self.tooltip.hide()  # Initially hidden
+        self.hover_timer = QTimer(self)
+        self.hover_timer.setSingleShot(True)
+        self.hover_timer.timeout.connect(self.hide_tooltip)
+        self.current_hover_index = None  # Track the index of the currently hovered card
+
+    def hide_tooltip(self):
+        if not any(self.animation_states[i]['tooltip_shown'] for i in self.animation_states):
+            self.tooltip.hide()
+            self.current_hover_index = None
+
+    def resizeEvent(self, event):
+        # Maintain a 16:9 aspect ratio
+        new_width = event.size().width()
+        new_height = int(new_width / 16 * 9)  # Calculate height based on a 16:9 ratio
+        self.resize(new_width, new_height)
+
+        # Update the background image to fit the new size
+        self.applyBackground()
+
+    def applyBackground(self):
+        # Scale pixmap to current size and set as background
+        scaled_pixmap = self.bg_pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding)
+        palette = QPalette()
+        palette.setBrush(QPalette.Window, scaled_pixmap)
+        self.setPalette(palette)
+
     def initUI(self):
-        self.setGeometry(300, 300, 1920, 1080)
-        self.setWindowTitle('Card Game')
-        self.setStyleSheet("background-color: rgb(59, 178, 115);")
+        self.setGeometry(300, 300, 1600, 900)
+        self.setWindowTitle('CardMaster')
+        # self.setStyleSheet("background-color: rgb(59, 178, 115);")
+
+        # Load and set background image
+        self.bg_pixmap = QPixmap('img/field bg.png')
+        self.applyBackground()
+
 
         # Set up the game logic
         self.game_manager = GameManager()
@@ -24,7 +58,7 @@ class CardGameUI(QWidget):
         # Timer for animation
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
-        self.timer.start(1000 / 60)  # roughly 60 fps
+        self.timer.start(1000 / 120)  # roughly 120 fps
 
         # Animation state initialization
         self.animation_states = {}
@@ -41,6 +75,7 @@ class CardGameUI(QWidget):
                 'width': 100, 'height': 150,
                 'target_width': 100, 'target_height': 150,
                 'small': True,
+                'tooltip_shown': False
             }
 
     def interpolate(self, value, target, speed):
@@ -48,14 +83,34 @@ class CardGameUI(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 - 75, 0)
-        self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8, self.height() // 4 + 75, len(self.game_manager.player.hand.cards))
+        self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 + 50, 0)
+        self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8, self.height() // 4 - 50,
+                       len(self.game_manager.player.hand.cards))
 
     def draw_deck(self, painter, deck, x, y, start_index=0):
-        card_spacing = 120
+        num_cards = len(deck.cards)
+        card_width = 100  # Standard width for each card
+
+        # Determine the total space available on the screen for the cards
+        max_total_width = self.width() - 2 * x  # Calculate available width from starting x to window edge
+        total_card_width = num_cards * card_width
+
+        # Adjust card_spacing to fit all cards within the available width
+        if total_card_width > max_total_width:
+            # Reduce spacing if cards would exceed the screen width
+            card_spacing = (max_total_width - card_width) / max(num_cards - 1, 1)
+        else:
+            # Keep standard spacing if there is enough space
+            card_spacing = 120  # This can be adjusted if you want a different default spacing
+
+        # Calculate the adjusted starting x position to center the cards
+        total_used_width = card_spacing * (num_cards - 1) + card_width
+        adjusted_x = x + (max_total_width - total_used_width) // 2  # Center the cards
+
         for i, card in enumerate(deck.cards):
             index = start_index + i
-            self.draw_card(painter, card, x + i * card_spacing, y, self.animation_states, index)
+            card_x = adjusted_x + i * card_spacing
+            self.draw_card(painter, card, card_x, y, self.animation_states, index)
 
     def draw_card(self, painter, card, x, y, animation_states, index):
         state = animation_states[index]
@@ -65,8 +120,8 @@ class CardGameUI(QWidget):
         # Adjust the card's target size only if the mouse state changes to prevent flickering
         if card_rect.contains(mouse_pos) and state['small']:
             state['small'] = False
-            state['target_width'] = 200
-            state['target_height'] = 300
+            state['target_width'] = 140
+            state['target_height'] = 210
         elif not card_rect.contains(mouse_pos) and not state['small']:
             state['small'] = True
             state['target_width'] = 100
@@ -87,12 +142,10 @@ class CardGameUI(QWidget):
         font = QFont('Arial', font_size)
         painter.setFont(font)
 
-        # Calculate scaled icon size and position
-        icon_size = max(50, state['width'] // 2, state['height'] // 3)
-        icon_rect = QRect(x - icon_size // 2, y - state['height'] // 4, icon_size, icon_size)
-
-        # Draw placeholder for icon
-        painter.drawRect(icon_rect)  # Replace this with actual QPixmap drawing later
+        if card.image and not card.image.isNull():
+            icon_size = max(50, state['width'] // 2, state['height'] // 2)
+            icon_rect = QRect(x - icon_size // 2, y - icon_size // 2, icon_size, icon_size)
+            painter.drawImage(icon_rect, card.image)  # Directly draw the QImage
 
         # Draw tier, HP, and attack labels
         tier_label = f"Tier: {card.tier}" if not state['small'] else f"{card.tier}"
@@ -127,7 +180,57 @@ class CardGameUI(QWidget):
             # Ensure the text wraps within the card and doesn't overflow
             painter.drawText(detail_text_rect, Qt.AlignTop | Qt.AlignLeft | Qt.TextWordWrap, desc_text)
 
+        if card_rect.contains(mouse_pos):
+            if self.current_hover_index != index:  # New card hovered
+                if self.current_hover_index is not None:  # There was a previous card being hovered
+                    self.animation_states[self.current_hover_index]['tooltip_shown'] = False
+                self.current_hover_index = index
+                self.tooltip.setText(f"{card.description}\n\nEffect: {card.effect_description}")
+                tooltip_pos = self.mapToGlobal(card_rect.bottomRight() + QPoint(20, -40))
+                self.tooltip.move(tooltip_pos)
+                self.tooltip.adjustSize()
+                self.tooltip.show()
+                state['tooltip_shown'] = True
+                self.hover_timer.stop()  # Stop the timer as we are over a card
+        else:
+            if state['tooltip_shown']:
+                state['tooltip_shown'] = False  # Mark the tooltip as no longer shown for this card
+                if self.current_hover_index == index:  # Check if this is the last card hovered over
+                    self.hover_timer.start(100)  # Delay before hiding tooltip to check if another card is hovered
 
+class CustomTooltip(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(Qt.ToolTip)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.text = ""
+        self.text_margin = 10  # Margin around the text
+        self.setMinimumWidth(100)  # Minimum width of the tooltip
+        self.font = QFont('Arial', 12)  # Set the font once here
+
+    def setText(self, text):
+        self.text = text
+        self.updateGeometry()  # Update the geometry based on the new text
+        self.update()  # Trigger a repaint with the new text
+
+    def updateGeometry(self):
+        # Calculate the required size based on the text
+        width = self.fontMetrics().boundingRect(QRect(0, 0, 200, 1000), Qt.TextWordWrap, self.text).width()
+        height = self.fontMetrics().boundingRect(QRect(0, 0, width, 1000), Qt.TextWordWrap, self.text).height()
+        self.resize(width + 2 * self.text_margin, height + 4 * self.text_margin)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(QColor(50, 50, 50))  # Set a darker background color
+        painter.setPen(Qt.NoPen)  # No border
+        painter.drawRect(self.rect())  # Draw a simple rectangle
+
+        # Draw the text
+        painter.setPen(QColor(255, 255, 255))  # Text color
+        painter.setFont(self.font)  # Use the font set in __init__
+        text_rect = self.rect().adjusted(self.text_margin, self.text_margin, -self.text_margin, -self.text_margin)
+        painter.drawText(text_rect, Qt.TextWordWrap, self.text)
 
 
 if __name__ == '__main__':
