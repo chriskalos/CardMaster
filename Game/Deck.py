@@ -12,12 +12,11 @@ class Deck:
         random.shuffle(self.cards)
 
     def randomiser(self, lowest_tier: int, highest_tier: int):
-        print(f"###1 - Lowest tier: {lowest_tier}, Highest tier: {highest_tier}")
+        # print(f"### - Lowest tier: {lowest_tier}, Highest tier: {highest_tier}")
         if lowest_tier < 1:
             lowest_tier = 1
         if highest_tier < 1:
             highest_tier = 1
-        print(f"###2 - Lowest tier: {lowest_tier}, Highest tier: {highest_tier}")
         if random.random() < 0.05 and highest_tier > 3:
             chosen_card = random.choice([card for card in cards_list if card.tier <= highest_tier and card.card_class.name == "RARE"])
         else:
@@ -39,8 +38,10 @@ class Deck:
     def get_deck_info(self):
         """Return a string of the current deck information."""
         deck_info = ""
+        i = 0
         for card in self.cards:
-            deck_info += card.get_card_info()
+            deck_info += f"Card {i}:\n{card.get_card_info()}"
+            i += 1
         return deck_info
     
     def generate_enemy_deck(self, matches_played: int, current_tier: int):

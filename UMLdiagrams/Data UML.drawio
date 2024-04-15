@@ -1,30 +1,30 @@
-<mxfile host="app.diagrams.net" modified="2024-04-10T10:37:23.849Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0" etag="t5waSZdC3KnkjHOqZfNX" version="24.2.3" type="device">
+<mxfile host="app.diagrams.net" modified="2024-04-15T12:24:04.802Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0" etag="WJQThgRYxrQVAwOYwprk" version="24.2.5" type="device">
   <diagram name="Page-1" id="3C9SZVpvr9mHW0cBooVO">
-    <mxGraphModel dx="574" dy="313" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="683" dy="372" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="igfgxxir6rYcErchm6PJ-2" value="Card Master" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="igfgxxir6rYcErchm6PJ-2" value="Card Master" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="230" y="250" width="355" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="igfgxxir6rYcErchm6PJ-3" value="Player" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+        <mxCell id="igfgxxir6rYcErchm6PJ-3" value="Player" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
           <mxGeometry x="270" y="40" width="30" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="igfgxxir6rYcErchm6PJ-7" value="Tester" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+        <mxCell id="igfgxxir6rYcErchm6PJ-7" value="Tester" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
           <mxGeometry x="470" y="40" width="30" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="igfgxxir6rYcErchm6PJ-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.151;entryY=0.024;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="igfgxxir6rYcErchm6PJ-3" target="igfgxxir6rYcErchm6PJ-2">
+        <mxCell id="igfgxxir6rYcErchm6PJ-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.151;entryY=0.024;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="igfgxxir6rYcErchm6PJ-3" target="igfgxxir6rYcErchm6PJ-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="igfgxxir6rYcErchm6PJ-11" value="&lt;div&gt;Name&lt;/div&gt;&lt;div&gt;Personal Record&lt;/div&gt;&lt;div&gt;Serialised Save data of current game&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="igfgxxir6rYcErchm6PJ-10">
+        <mxCell id="igfgxxir6rYcErchm6PJ-11" value="&lt;div&gt;Name&lt;/div&gt;&lt;div&gt;Personal Record&lt;/div&gt;&lt;div&gt;Serialised Save data of current game&lt;/div&gt;&lt;div&gt;Game Inputs&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="igfgxxir6rYcErchm6PJ-10" vertex="1" connectable="0">
           <mxGeometry x="0.338" relative="1" as="geometry">
             <mxPoint x="-1" y="-22" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="igfgxxir6rYcErchm6PJ-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.717;entryY=-0.01;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="igfgxxir6rYcErchm6PJ-7" target="igfgxxir6rYcErchm6PJ-2">
+        <mxCell id="igfgxxir6rYcErchm6PJ-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.717;entryY=-0.01;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="igfgxxir6rYcErchm6PJ-7" target="igfgxxir6rYcErchm6PJ-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="igfgxxir6rYcErchm6PJ-15" value="&lt;div&gt;Name&lt;/div&gt;&lt;div&gt;Personal Record&lt;/div&gt;&lt;div&gt;Serialised Save data of current game&lt;/div&gt;&lt;div&gt;Login Details&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="igfgxxir6rYcErchm6PJ-14">
+        <mxCell id="igfgxxir6rYcErchm6PJ-15" value="&lt;div&gt;Name&lt;/div&gt;&lt;div&gt;Personal Record&lt;/div&gt;&lt;div&gt;Serialised Save data of current game&lt;/div&gt;&lt;div&gt;Game Inputs&lt;br&gt;&lt;/div&gt;&lt;div&gt;Login Details&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="igfgxxir6rYcErchm6PJ-14" vertex="1" connectable="0">
           <mxGeometry x="0.0051" y="1" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>

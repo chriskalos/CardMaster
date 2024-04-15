@@ -1,9 +1,11 @@
 from Deck import Deck
 from Player import Player
+from Match import Match
 
 class GameManager:
     def __init__(self):
-        self.matches = 1
+        self.player = Player()
+        self.matches = 0
         self.tier = 1
         self.player_wins = 0
         self.player_losses = 0

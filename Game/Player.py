@@ -1,7 +1,8 @@
 class Player:
     def __init__(self):
+        self.name = ""
         self.hp = 10
-        self.mana = 0 # todo: Mana = current tier + 2
+        self.mana = 0
         self.alive_deck = []
         self.dead_deck = []
         self.cards_on_board = []

@@ -1,4 +1,5 @@
 import pygame
+from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
 
 # Initialize PyGame
 pygame.init()
@@ -15,7 +16,6 @@ pygame.font.init()
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 24)
 
-from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
 
 # Create an instance of GameManager
 game_manager = GameManager()
@@ -115,20 +115,34 @@ def draw_card(screen, card, x, y, animation_states, index):
         # Description (below the image)
         desc_font = pygame.font.Font(None, card_font_size)
         desc_lines = []
-        words = card.description.split()
-        current_line = ""
-        for word in words:
-            if desc_font.size(current_line + " " + word)[0] <= card_width - 100:
-                current_line += " " + word
-            else:
-                desc_lines.append(current_line.strip())
-                current_line = word
-        desc_lines.append(current_line.strip())
+        # Ensure there are two newlines between description and effect description.
+        desc_and_effect = f"{card.description}\n\nEffect: {card.effect_description}"
 
+        # Split the text into lines manually, respecting newlines
+        # This splits on explicit newlines to create a list of lines, and then further splits each line into words.
+        lines = desc_and_effect.split('\n')
+        for line in lines:
+            words = line.split()
+            current_line = ""
+            for word in words:
+                # Check if adding the next word would exceed the width limit
+                if desc_font.size(current_line + " " + word)[0] > card_width - 100:
+                    desc_lines.append(current_line.strip())
+                    current_line = word
+                else:
+                    current_line += " " + word
+            # Append the last processed line if it contains text
+            if current_line:
+                desc_lines.append(current_line.strip())
+            # Since we're processing explicit lines, add an empty string for each newline encountered
+            desc_lines.append("")
+
+        # Render each line
         for i, line in enumerate(desc_lines):
-            desc_surf = font.render(line, True, card_text_color)
-            desc_rect = desc_surf.get_rect(center=(x, y - card_height // 2 + 100 + i * card_font_size))
-            screen.blit(desc_surf, desc_rect)
+            if line:  # This check avoids attempting to render empty strings
+                desc_surf = font.render(line, True, card_text_color)
+                desc_rect = desc_surf.get_rect(center=(x, y - card_height // 2 + 100 + i * card_font_size))
+                screen.blit(desc_surf, desc_rect)
 
         # Tier (top right)
         tier_surf = font.render(f"Tier: {card.tier}", True, card_tier_color)

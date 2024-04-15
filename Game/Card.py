@@ -161,7 +161,7 @@ class HungryAssassin(Card):
 
 class Flea(Card):
     def activate_effect(self):
-        print(f"If this unit attacks another unit, destroy it after battle.")
+        print(f"Deals fatal damage to the first target.")
 
 class BigGunga(Card):
     def activate_effect(self):
@@ -169,7 +169,7 @@ class BigGunga(Card):
 
 class Sender(Card):
     def activate_effect(self):
-        print(f"Add to Sender's attack stat the attack stat of the unit to its left.")
+        print(f"Shoot the opposing unit for the combined attack and HP values of the unit to the left.")
 
 class RoyalSummoner(Card):
     def activate_effect(self):
@@ -177,7 +177,7 @@ class RoyalSummoner(Card):
 
 class Copycat(Card):
     def activate_effect(self):
-        print(f"When a friendly unit activates its ability, gain 2 attack and 2 HP permanently.") # Permanently means for the duration of the match, not like forever
+        print(f"When any unit activates its ability, gain 2 attack and 2 HP permanently.") # Permanently means for the duration of the match, not like forever
 
 class UnceasingVoid(Card):
     def activate_effect(self):
@@ -207,10 +207,10 @@ cards_list = [
     HungryAssassin("Hungry Assassin", "You look... delicious.", 4, 10, 10, CardClass.RARE, "Hungry Assassin sacrifices as much HP as the opposing unit's HP to destroy it. Bon appétit!"),
     Flea("Flea", "Life is too short to learn German.", 4, 1, 1, CardClass.RARE, "If Flea attacks another unit, destroy it after battle. Auf Wiedersehen!"),
     BigGunga("Big Gunga", "A sophisticated gentleman such as myself is not to be trifled with.", 5, 15, 10, CardClass.BRAWLER, "Big Gunga attacks the opposing unit. If the opposing unit dies from this attack, Big Gunga gains half its stats. Call it a gentleman's quarrel."),
-    Sender("Sender", "I send you my regards.", 5, 4, 4, CardClass.ARCHER, "Add to Sender's attack stat the attack stat of the unit to his left. Regards, Sender."),
+    Sender("Sender", "I send you my regards.", 5, 4, 4, CardClass.ARCHER, "Sender, the divine messenger, shoots the opposing unit for the combined attack and HP values of the unit to his left. Aaaaand send!"),
     RoyalSummoner("Royal Summoner", "I summon thee!", 5, 6, 7, CardClass.MAGE, "Summon a random unit from the discard pile, deck, or hand, and place it to the right of this unit. The Royal Summoner beckons thee."),
-    Copycat("Copycat", "I am thou, thou art I.", 5, 2, 2, CardClass.RARE, "When a friendly unit activates its ability, gain 2 attack and 2 HP permanently. The Copycat is you, and you are the Copycat."),
-    UnceasingVoid("The Unceasing Void", "Infinity.", 5, 30, 0, CardClass.RARE, "If the Unceasing Void is on the board, you cannot die. Infinity is a long time.")
+    Copycat("Copycat", "I am thou, thou art I.", 5, 2, 2, CardClass.RARE, "When any unit on the board activates its ability, gain 2 attack and 2 HP permanently. The Copycat is you, and you are the Copycat."),
+    UnceasingVoid("The Unceasing Void", "Infinity.", 5, 30, 0, CardClass.RARE, "While The Unceasing Void is on the board, you cannot die. Infinity is a long time.")
 ]
 
 def print_cards():
