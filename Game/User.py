@@ -37,7 +37,9 @@ class User:
 
     def draw_card(self):
         if len(self.alive_deck.cards) > 0:
-            self.hand.cards.append(self.alive_deck.draw())
+            card = self.alive_deck.draw()
+            self.hand.cards.append(card)
+            self.alive_deck.cards.remove(card)
         pass
 
     def check_hp(self):

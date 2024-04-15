@@ -32,6 +32,6 @@ class Deck:
         deck_info = ""
         i = 0
         for card in self.cards:
-            deck_info += f"Card {i}:\n{card.get_card_info()}"
+            deck_info += f"Card {i}:\n{card}"
             i += 1
         return deck_info

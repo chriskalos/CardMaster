@@ -72,7 +72,7 @@ class Card(ABC):
         """Method to handle the card's death"""
         print(f"{self.name} has died.")
 
-    def get_card_info(self):
+    def __str__(self):
         return (
             f"-=| Card Information| =-\n"
             f"Name: {self.name}\n"
