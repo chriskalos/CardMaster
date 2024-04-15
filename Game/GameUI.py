@@ -9,6 +9,8 @@ class CardGameUI(QWidget):
         super().__init__()
         self.initUI()
 
+        self.card_rects = {}  # To store rectangles of cards currently displayed
+
         # Tooltip stuff
         self.tooltip = CustomTooltip(self)
         self.tooltip.hide()  # Initially hidden
@@ -75,7 +77,8 @@ class CardGameUI(QWidget):
                 'width': 100, 'height': 150,
                 'target_width': 100, 'target_height': 150,
                 'small': True,
-                'tooltip_shown': False
+                'tooltip_shown': False,
+                'clicked': False
             }
 
     def interpolate(self, value, target, speed):
@@ -86,6 +89,31 @@ class CardGameUI(QWidget):
         self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 + 50, 0)
         self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8, self.height() // 4 - 50,
                        len(self.game_manager.player.hand.cards))
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            for index, state in self.animation_states.items():
+                card_rect = QRect(state['x'] - state['width'] // 2, state['y'] - state['height'] // 2,
+                                  state['width'], state['height'])
+                if card_rect.contains(event.pos()):
+                    state['clicked'] = not state['clicked']  # Toggle the clicked state
+                    self.handle_card_click(index)  # Call a method to handle the card click
+                    break
+
+    def handle_card_click(self, index):
+        card = self.get_card_by_index(index)
+        if self.animation_states[index]['clicked']:
+            # Perform actions when the card is clicked
+            print(f"Card {card.name} is clicked!")
+            # Add your desired actions here
+        else:
+            # Perform actions when the card is unclicked
+            print(f"Card {card.name} is unclicked!")
+            # Add your desired actions here
+
+    def get_card_by_index(self, index):
+        cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
+        return cards[index]
 
     def draw_deck(self, painter, deck, x, y, start_index=0):
         num_cards = len(deck.cards)
@@ -117,15 +145,25 @@ class CardGameUI(QWidget):
         mouse_pos = self.mapFromGlobal(self.cursor().pos())
         card_rect = QRect(x - state['width'] // 2, y - state['height'] // 2, state['width'], state['height'])
 
+        state['x'] = x
+        state['y'] = y
+
         # Adjust the card's target size only if the mouse state changes to prevent flickering
         if card_rect.contains(mouse_pos) and state['small']:
             state['small'] = False
-            state['target_width'] = 140
-            state['target_height'] = 210
+            # state['target_width'] = 140
+            # state['target_height'] = 210
         elif not card_rect.contains(mouse_pos) and not state['small']:
             state['small'] = True
+            # state['target_width'] = 100
+            # state['target_height'] = 150
+
+        if state['small']:
             state['target_width'] = 100
             state['target_height'] = 150
+        elif not state['small']:
+            state['target_width'] = 140
+            state['target_height'] = 210
 
         # Smooth transition of card size
         state['width'] = self.interpolate(state['width'], state['target_width'], 0.1)
@@ -167,6 +205,11 @@ class CardGameUI(QWidget):
         # Draw name centered above the icon
         painter.drawText(x - state['width'] // 4, icon_rect.top() - font_size - 16,
                          state['width'] // 2, font_size + 6, Qt.AlignCenter, card.name)
+
+        if state['clicked']:
+            # Draw a border around the card when clicked
+            painter.setPen(QColor(255, 0, 0))
+            painter.drawRect(card_rect.adjusted(1, 1, -1, -1))
 
         if not state['small']:
             # Only draw detailed text for large cards
