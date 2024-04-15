@@ -25,26 +25,32 @@ def battle():
         selected_card = get_user_option("Enter the number of the card you want to select: ")
         if selected_card.isdigit():
             selected_card = int(selected_card)
-            if 0 <= selected_card < len(game_manager.player.alive_deck.cards):
-                card = game_manager.player.alive_deck.cards[selected_card]
-                print(f"Selected card: {card.get_card_info()}")
+            if 0 <= selected_card < len(game_manager.player.hand.cards):
+                card = game_manager.player.hand.cards[selected_card]
+                print(f"Selected card: {card}")
+                ### CARD SELECTED ###
                 option = get_user_option("Enter your option (1: Play card, 2: Go back): ")
                 if option == "1":
-                    # Add code to play the selected card on the board
-                    print(f"Played {game_manager.player.alive_deck.cards[selected_card].name} on the board.")
+                    # Play the selected card on the board
+                    print(f"Played {game_manager.player.hand.cards[selected_card].name} on the board.")
+                    game_manager.player.play_card(card)
+                    # 
                 elif option == "2":
-                    return
+                    battle()
                 else:
                     print("Invalid option")
+                    select_card()
             else:
                 print("Invalid card number")
+                select_card()
         else:
             print("Invalid input")
+            select_card()
 
-    option = get_user_option("Enter your option (1: Show player deck, 2: Show board, 3: End turn):")
+    option = get_user_option("Enter your option (1: Show player hand, 2: Show board, 3: End turn):")
 
     if option == "1":
-        print(game_manager.player.alive_deck)
+        print(game_manager.player.hand)
         option = get_user_option("Enter your option (1: Select card, 2: Go back): ")
         select_card()
 

@@ -10,6 +10,7 @@ class User:
         self.dead_deck = Deck()
         self.cards_on_board = []
         self.hand = Deck()
+        self.hand_size = 5
 
     def kill_card(self, card):
         self.dead_deck.cards.append(card)
@@ -39,8 +40,6 @@ class User:
         if len(self.alive_deck.cards) > 0:
             card = self.alive_deck.draw()
             self.hand.cards.append(card)
-            self.alive_deck.cards.remove(card)
-        pass
 
     def check_hp(self):
         if self.hp <= 0:

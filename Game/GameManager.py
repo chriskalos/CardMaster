@@ -11,17 +11,13 @@ class GameManager:
         self.player_losses = 0
         self.current_match = None
 
-    def update_enemy_deck(self, new_enemy_deck: Deck):
-        """Update the enemy's deck with a new deck."""
-        self.enemy_deck = new_enemy_deck
-
     def record_win(self):
         """Record a win for the player."""
         self.player_wins += 1
 
     def record_loss(self):
         """Record a loss for the player."""
-        self.player_losses += 1    
+        self.player_losses += 1
 
     def start_match(self):
         """Start a new match."""
@@ -36,6 +32,13 @@ class GameManager:
         # todo: optional: give the enemy a name or something
 
         self.current_match = Match(self.tier, self.player, self.enemy)
+
+        self.current_match.enemy.mana = self.tier + 2
+
+        for i in range(self.player.hand_size):
+            self.player.draw_card()
+        for i in range(self.current_match.enemy.hand_size):
+            self.current_match.enemy.draw_card()
 
     def get_game_stats(self):
         """Return a string of the current game statistics."""
