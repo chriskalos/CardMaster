@@ -142,10 +142,13 @@ class CardGameUI(QWidget):
         font = QFont('Arial', font_size)
         painter.setFont(font)
 
+        icon_size = max(50, state['width'] // 2, state['height'] // 2)
+        icon_rect = QRect(x - icon_size // 2, y - icon_size // 2, icon_size, icon_size)
         if card.image and not card.image.isNull():
-            icon_size = max(50, state['width'] // 2, state['height'] // 2)
-            icon_rect = QRect(x - icon_size // 2, y - icon_size // 2, icon_size, icon_size)
             painter.drawImage(icon_rect, card.image)  # Directly draw the QImage
+        else:
+            # Draw a simple rectangle in the place of the image
+            painter.fillRect(icon_rect, QColor(100, 100, 100))
 
         # Draw tier, HP, and attack labels
         tier_label = f"Tier: {card.tier}" if not state['small'] else f"{card.tier}"
@@ -162,8 +165,8 @@ class CardGameUI(QWidget):
                          Qt.AlignBottom | Qt.AlignRight, attack_label)
 
         # Draw name centered above the icon
-        painter.drawText(x - state['width'] // 4, icon_rect.top() - font_size - corner_offset,
-                         state['width'] // 2, font_size, Qt.AlignCenter, card.name)
+        painter.drawText(x - state['width'] // 4, icon_rect.top() - font_size - 16,
+                         state['width'] // 2, font_size + 6, Qt.AlignCenter, card.name)
 
         if not state['small']:
             # Only draw detailed text for large cards
@@ -172,13 +175,9 @@ class CardGameUI(QWidget):
                                      card_rect.width() - 2 * detail_text_margin,
                                      state['height'] - icon_rect.bottom() - 20)
 
-            desc_text = f"{card.description}\nEffect: {card.effect_description}"
             detail_font_size = max(8, int(detail_text_rect.height() / 12))
             detail_font = QFont('Arial', detail_font_size)
             painter.setFont(detail_font)
-
-            # Ensure the text wraps within the card and doesn't overflow
-            painter.drawText(detail_text_rect, Qt.AlignTop | Qt.AlignLeft | Qt.TextWordWrap, desc_text)
 
         if card_rect.contains(mouse_pos):
             if self.current_hover_index != index:  # New card hovered
