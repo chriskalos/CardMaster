@@ -1,6 +1,5 @@
 from enum import Enum
-from Game.Board import Board
-from Game.Player import Enemy, Player
+from User import Enemy, Player
 
 class Phase(Enum):
     DRAW = 1
@@ -9,12 +8,11 @@ class Phase(Enum):
     ATTACKS = 4
 
 class Match:
-    def __init__(self, tier: int, player: Player, enemy: Enemy, turn: int, board: Board, player_score: int, enemy_score:int):
+    def __init__(self, tier: int, player: Player, enemy: Enemy):
         self.tier = tier
         self.player = player
         self.enemy = enemy
-        self.turn = turn
-        self.board = board
-        self.player_score = player_score
-        self.enemy_score = enemy_score
+        self.turn = 1
+        self.player_score = 0
+        self.enemy_score = 0
         self.phase = Phase.DRAW  # Initialize the phase to DRAW

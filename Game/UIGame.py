@@ -19,8 +19,6 @@ font = pygame.font.Font(None, 24)
 
 # Create an instance of GameManager
 game_manager = GameManager()
-game_manager.instantiate_player_deck()  # Create the initial deck
-game_manager.instantiate_enemy_deck()
 
 def interpolate(value, target, speed):
     return value + (target - value) * speed  # Adjust speed to control animation duration
@@ -162,7 +160,7 @@ def draw_card(screen, card, x, y, animation_states, index):
 
 # Initialize animation states for each card
 animation_states = {}
-for i, card in enumerate(game_manager.player_deck.cards + game_manager.enemy_deck.cards):
+for i, card in enumerate(game_manager.player.alive_deck.cards + game_manager.enemy_deck.cards):
     animation_states[i] = {'width': 100, 'height': 150, 'target_width': 100, 'target_height': 150, 'small': True}
 
 def draw_deck(screen, deck, x, y, start_index=0):
@@ -178,8 +176,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     screen.fill((59, 178, 115))  # Background color
-    draw_deck(screen, game_manager.player_deck, window_width // 8, window_height * 3 // 4 - 75, 0)
-    draw_deck(screen, game_manager.enemy_deck, window_width // 8, window_height // 4 + 75, len(game_manager.player_deck.cards))
+    draw_deck(screen, game_manager.player.alive_deck, window_width // 8, window_height * 3 // 4 - 75, 0)
+    draw_deck(screen, game_manager.enemy_deck, window_width // 8, window_height // 4 + 75, len(game_manager.player.alive_deck.cards))
     clock.tick(fps)
     pygame.display.update()
 
