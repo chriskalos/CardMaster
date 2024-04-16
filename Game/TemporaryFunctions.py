@@ -21,6 +21,7 @@ def ai(totalMana, handSize, hand=[], currentSelection=[]):
         currentSelection.append(hand[handSize - 1])
         return ai(totalMana - hand[handSize - 1], handSize - 1, hand, currentSelection)
         
+
 hand = [1, 2, 3, 4, 5]
 totalMana = 7
 handSize = len(hand)

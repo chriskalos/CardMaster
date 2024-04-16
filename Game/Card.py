@@ -231,5 +231,8 @@ def print_cards():
         print(card.get_card_info())
         print()
 
+def get_all_cards():
+    return cards_list
+
 # Debugging
 # print_cards()

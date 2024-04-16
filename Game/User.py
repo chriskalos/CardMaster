@@ -18,8 +18,8 @@ class User:
 
     def play_card(self, card): # todo: Play card from hand into the turn, which in turn plays it into the match
         self.mana -= card.tier
-        self.hand.cards.remove(card)
         self.cards_on_board.cards.append(card)
+        self.hand.cards.remove(card)
 
     def play_turn(self):
         #todo: Call upon turn to take the cards from the board and play them
@@ -89,3 +89,4 @@ class Enemy(User):
             print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")
             print(f"DEBUG: Current tier score: {current_tier_score}.")
         print(f"DEBUG: Enemy deck generated with {len(self.alive_deck.cards)} cards.")
+
