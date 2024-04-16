@@ -8,7 +8,7 @@ class User:
         self.mana = 0 # todo: Mana = current tier + 2
         self.alive_deck = Deck()
         self.dead_deck = Deck()
-        self.cards_on_board = []
+        self.cards_on_board = Deck()
         self.hand = Deck()
         self.hand_size = 5
 
@@ -17,9 +17,9 @@ class User:
         self.alive_deck.cards.remove(card)
 
     def play_card(self, card): # todo: Play card from hand into the turn, which in turn plays it into the match
-        self.hand.cards.remove(card)
         self.mana -= card.tier
-        self.dead_deck.cards.append(card)
+        self.hand.cards.remove(card)
+        self.cards_on_board.cards.append(card)
 
     def play_turn(self):
         #todo: Call upon turn to take the cards from the board and play them
@@ -27,14 +27,14 @@ class User:
 
     def sacrifice_card(self, card): # Sacrifice 1 HP to send all cards on the board to the dead deck and redraw as many as they are from the alive deck
         # Find how many cards are on the board
-        num_cards = len(self.cards_on_board)
+        num_cards = len(self.cards_on_board.cards)
         # For each card on the board, lose 1 HP and send it to the dead deck
-        for card in self.cards_on_board:
+        for card in self.cards_on_board.cards:
             self.hp -= 1
             self.check_hp()
             self.dead_deck.cards.append(card)
             self.draw_card()
-        self.cards_on_board.clear()
+        self.cards_on_board.cards.clear()
 
     def draw_card(self):
         if len(self.alive_deck.cards) > 0:

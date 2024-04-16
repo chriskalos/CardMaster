@@ -18,8 +18,8 @@ class CardGameUI(QWidget):
         self.hover_timer.setSingleShot(True)
         self.hover_timer.timeout.connect(self.hide_tooltip)
         self.current_hover_index = None  # Track the index of the currently hovered card
-        # self.play_cards_button.clicked.connect(self.play_cards)
-        # self.end_turn_button.clicked.connect(self.end_turn)
+        self.play_cards_button.clicked.connect(self.play_cards)
+        self.end_turn_button.clicked.connect(self.end_turn)
 
     def hide_tooltip(self):
         if not any(self.animation_states[i]['tooltip_shown'] for i in self.animation_states):
@@ -156,6 +156,11 @@ class CardGameUI(QWidget):
             print(f"Card {card.name} is unclicked!")
             # Add your desired actions here
 
+    def reset_card_states(self):
+        for state in self.animation_states.values():
+            state['clicked'] = False  # Reset the clicked state of all cards
+        self.update_play_cards_button()  # Update the button states
+
     def get_card_by_index(self, index):
         cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
         return cards[index]
@@ -164,6 +169,22 @@ class CardGameUI(QWidget):
         any_card_clicked = any(
             state['clicked'] for state in self.animation_states.values() if state.get('player_card', False))
         self.play_cards_button.setEnabled(any_card_clicked)
+
+    def end_turn(self):
+        print("Phase:", self.game_manager.current_match.phase.name)
+        if self.game_manager.current_match.phase.name == 'PLAY':
+            self.game_manager.current_match.cycle_phase()
+            self.game_manager.current_match.player.play_turn()
+            self.reset_card_states()
+        else:
+            print("It's not the PLAY phase!")
+
+    def play_cards(self):
+        for index, state in self.animation_states.items():
+            if state['clicked'] and state['player_card']:
+                card = self.get_card_by_index(index)
+                self.game_manager.current_match.player.play_card(card)
+        self.reset_card_states()
 
     def draw_deck(self, painter, deck, x, y, start_index=0):
         num_cards = len(deck.cards)

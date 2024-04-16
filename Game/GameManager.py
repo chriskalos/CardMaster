@@ -40,6 +40,11 @@ class GameManager:
         for i in range(self.current_match.enemy.hand_size):
             self.current_match.enemy.draw_card()
 
+        if self.current_match.phase.name == "DRAW":
+            self.current_match.cycle_phase()
+        else:
+            print("Error: Match did not start in DRAW phase.")
+
     def get_game_stats(self):
         """Return a string of the current game statistics."""
         stats = (

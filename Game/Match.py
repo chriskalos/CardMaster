@@ -16,3 +16,15 @@ class Match:
         self.player_score = 0
         self.enemy_score = 0
         self.phase = Phase.DRAW  # Initialize the phase to DRAW
+
+    def cycle_phase(self):
+        """Cycle the phase to the next phase."""
+        if self.phase == Phase.DRAW:
+            self.phase = Phase.PLAY
+        elif self.phase == Phase.PLAY:
+            self.phase = Phase.EFFECTS
+        elif self.phase == Phase.EFFECTS:
+            self.phase = Phase.ATTACKS
+        elif self.phase == Phase.ATTACKS:
+            self.phase = Phase.DRAW
+            self.turn += 1
