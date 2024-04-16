@@ -134,6 +134,9 @@ class CardGameUI(QWidget):
         self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8, self.height() // 4 - 50,
                        len(self.game_manager.player.hand.cards))
 
+        self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 50, len(self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards))
+        self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8, self.height() // 2 - 50, len(self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards + self.game_manager.player.cards_on_board.cards))
+
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             for index, state in self.animation_states.items():
