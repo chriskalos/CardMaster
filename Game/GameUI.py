@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtCore import QTimer, Qt, QRect, QPoint
 from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette
 from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
@@ -18,6 +18,8 @@ class CardGameUI(QWidget):
         self.hover_timer.setSingleShot(True)
         self.hover_timer.timeout.connect(self.hide_tooltip)
         self.current_hover_index = None  # Track the index of the currently hovered card
+        # self.play_cards_button.clicked.connect(self.play_cards)
+        # self.end_turn_button.clicked.connect(self.end_turn)
 
     def hide_tooltip(self):
         if not any(self.animation_states[i]['tooltip_shown'] for i in self.animation_states):
@@ -69,16 +71,58 @@ class CardGameUI(QWidget):
         # Tooltip setup
         QToolTip.setFont(QFont('Arial', 14))
 
+        # Create a main layout
+        main_layout = QVBoxLayout()  # Vertical box layout
+
+        # Create a horizontal layout for the buttons
+        button_layout = QHBoxLayout()
+
+        # Add stretch to push everything to the right
+        button_layout.addStretch(1)
+
+        # Play Card(s) Button
+        self.play_cards_button = QPushButton("Play Card(s)")
+        self.play_cards_button.setEnabled(False)  # Initially disabled
+        self.play_cards_button.setMinimumSize(160, 60)  # Set a minimum size for the button
+        self.play_cards_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
+        button_layout.addWidget(self.play_cards_button)
+
+        # End Turn Button
+        self.end_turn_button = QPushButton("End Turn")
+        self.end_turn_button.setMinimumSize(160, 60)  # Same size as the Play Card button
+        self.end_turn_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
+        button_layout.addWidget(self.end_turn_button)
+
+        # Add the buttons layout to the main layout
+        main_layout.addStretch(1)  # Add stretch to push everything to the bottom
+        main_layout.addLayout(button_layout)
+
+        # Set the main layout to the central widget or the main window
+        self.setLayout(main_layout)
+
     # In your init_animation_states method:
     def init_animation_states(self):
-        cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
-        for i, card in enumerate(cards):
+        # Initialize states for player's cards
+        for i, card in enumerate(self.game_manager.player.hand.cards):
             self.animation_states[i] = {
                 'width': 100, 'height': 150,
                 'target_width': 100, 'target_height': 150,
                 'small': True,
                 'tooltip_shown': False,
-                'clicked': False
+                'clicked': False,
+                'player_card': True  # This card belongs to the player
+            }
+
+        # Initialize states for enemy's cards
+        num_player_cards = len(self.game_manager.player.hand.cards)
+        for j, card in enumerate(self.game_manager.current_match.enemy.hand.cards):
+            self.animation_states[num_player_cards + j] = {
+                'width': 100, 'height': 150,
+                'target_width': 100, 'target_height': 150,
+                'small': True,
+                'tooltip_shown': False,
+                'clicked': False,
+                'player_card': False  # This card belongs to the enemy
             }
 
     def interpolate(self, value, target, speed):
@@ -95,10 +139,11 @@ class CardGameUI(QWidget):
             for index, state in self.animation_states.items():
                 card_rect = QRect(state['x'] - state['width'] // 2, state['y'] - state['height'] // 2,
                                   state['width'], state['height'])
-                if card_rect.contains(event.pos()):
+                if card_rect.contains(event.pos()) and state['player_card']:
                     state['clicked'] = not state['clicked']  # Toggle the clicked state
                     self.handle_card_click(index)  # Call a method to handle the card click
                     break
+            self.update_play_cards_button()
 
     def handle_card_click(self, index):
         card = self.get_card_by_index(index)
@@ -114,6 +159,11 @@ class CardGameUI(QWidget):
     def get_card_by_index(self, index):
         cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
         return cards[index]
+
+    def update_play_cards_button(self):
+        any_card_clicked = any(
+            state['clicked'] for state in self.animation_states.values() if state.get('player_card', False))
+        self.play_cards_button.setEnabled(any_card_clicked)
 
     def draw_deck(self, painter, deck, x, y, start_index=0):
         num_cards = len(deck.cards)
@@ -209,7 +259,9 @@ class CardGameUI(QWidget):
         if state['clicked']:
             # Draw a border around the card when clicked
             painter.setPen(QColor(255, 0, 0))
-            painter.drawRect(card_rect.adjusted(1, 1, -1, -1))
+            painter.drawRect(card_rect.adjusted(2, 2, -2, -2))
+            painter.setPen(QColor(255, 255, 0))
+            painter.drawRect(card_rect.adjusted(3, 3, -3, -3))
 
         if not state['small']:
             # Only draw detailed text for large cards
