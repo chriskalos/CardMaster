@@ -26,21 +26,12 @@ class GameManager:
             self.tier += 1
         # Make a new enemy for each round
         enemy = Enemy(self.current_match_number, self.tier)
-        enemy.mana = self.tier + 2
-
         self.current_match = Match(self.tier, self.player, enemy)
 
-        self.current_match.enemy.mana = self.tier + 2
-
-        for i in range(self.player.hand_size):
-            self.player.draw_card()
-        for i in range(self.current_match.enemy.hand_size):
-            self.current_match.enemy.draw_card()
-
-        if self.current_match.phase.name == "DRAW":
-            self.current_match.cycle_phase()
-        else:
-            print("DEBUG Error start_match: Match did not start in DRAW phase.")
+        # if self.current_match.phase.name == "DRAW":
+        #     self.current_match.cycle_phase()
+        # else:
+        #     print("DEBUG Error start_match: Match did not start in DRAW phase.")
 
     def get_game_stats(self):
         """Return a string of the current game statistics."""

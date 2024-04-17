@@ -39,10 +39,6 @@ class User:
         # print(self.cards_on_board)
         # print(f"DEBUG play_card: Card {card.name} played. Mana remaining: {self.mana}.")
 
-    def play_turn(self):
-        #todo: Call upon turn to take the cards from the board and play them
-        pass
-
     def sacrifice_card(self, card): # Sacrifice 1 HP to send all cards on the board to the dead deck and redraw as many as they are from the alive deck
         # Find how many cards are on the board
         num_cards = len(self.cards_on_board.cards)

@@ -7,6 +7,7 @@ from GameManager import GameManager
 class GameUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.animation_states = {}
         self.initUI()
 
         self.card_rects = {}  # To store rectangles of cards currently displayed
@@ -63,7 +64,6 @@ class GameUI(QWidget):
         self.timer.start(1000 // 120)  # roughly 120 fps
 
         # Animation state initialization
-        self.animation_states = {}
         self.init_animation_states()
 
         # Tooltip setup
@@ -151,11 +151,6 @@ class GameUI(QWidget):
         self.enemy_stats_label.setText(f"Enemy\nHP: {self.game_manager.current_match.enemy.hp}\nMana: {self.game_manager.current_match.enemy.mana}")
         self.player_stats_label.setText(f"Player\nHP: {self.game_manager.current_match.player.hp}\nMana: {self.game_manager.current_match.player.mana}")
 
-    def update_animation_states(self):
-        # Rebuild the entire animation_states to reflect current game state
-        self.animation_states = {}
-        self.init_animation_states()  # You may need to modify this function to work with dynamic changes
-
     def interpolate(self, value, target, speed):
         return value + (target - value) * speed
 
@@ -219,18 +214,8 @@ class GameUI(QWidget):
     def continue_turn(self):
         # Submit the cards on the board and go to the effects phase of the battle
         print("Phase:", self.game_manager.current_match.phase.name)
-        if self.game_manager.current_match.phase.name == 'PLAY':
-            self.game_manager.current_match.cycle_phase()
-            self.game_manager.current_match.player.play_turn()
-            self.reset_card_states()
-        elif self.game_manager.current_match.phase.name == 'EFFECTS':
-            self.game_manager.current_match.cycle_phase()
-        elif self.game_manager.current_match.phase.name == 'ATTACKS':
-            self.game_manager.current_match.cycle_phase()
-        elif self.game_manager.current_match.phase.name == 'DRAW':
-            self.game_manager.current_match.cycle_phase()
-        else:
-            print("uhhhhhh")
+        self.reset_card_states()
+        self.game_manager.current_match.cycle_phase()
 
     def play_cards(self):
         for uuid, state in self.animation_states.items():
@@ -272,6 +257,7 @@ class GameUI(QWidget):
 
     def draw_card(self, painter, card, x, y, animation_states):
         uuid = card.uuid
+        # print(f"DEBUG draw_card (VISUAL): Drawing card {card.uuid} {card.name} at ({x}, {y})")
         state = animation_states[card.uuid]
         mouse_pos = self.mapFromGlobal(self.cursor().pos())
         card_rect = QRect(x - state['width'] // 2, y - state['height'] // 2, state['width'], state['height'])
