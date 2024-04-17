@@ -26,11 +26,10 @@ class GameManager:
         if self.current_match_number % 2 == 0:
             self.tier += 1
         # Make a new enemy for each round
-        self.enemy = Enemy(self.current_match_number, self.tier)
-        self.enemy.mana = self.tier + 2
-        # todo: optional: give the enemy a name or something
+        enemy = Enemy(self.current_match_number, self.tier)
+        enemy.mana = self.tier + 2
 
-        self.current_match = Match(self.tier, self.player, self.enemy)
+        self.current_match = Match(self.tier, self.player, enemy)
 
         self.current_match.enemy.mana = self.tier + 2
 

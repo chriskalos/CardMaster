@@ -13,9 +13,9 @@ class CardClass(Enum):
     RARE = auto()
 
 class CardColor(Enum):
-    BLUE = auto()
     GREEN = auto()
-    ORANGE = auto()
+    BLUE = auto()
+    PURPLE = auto()
     YELLOW = auto()
     RED = auto()
 
@@ -56,7 +56,6 @@ class Card(ABC):
         if not isinstance(effect_description, str):
             raise TypeError("Effect description must be a string.")
 
-        # Generate unique UUID as soon as the card is instantiated
         self.uuid = None
         self.name = name
         self.description = description
@@ -64,7 +63,7 @@ class Card(ABC):
         self.hp = hp
         self.attack = attack
         self.card_class = CardClass(card_class)
-        self.color = CardColor(list(CardColor)[tier-1])
+        self.color = CardColor(list(CardColor)[self.tier-1])
         self.effect_description = effect_description
         # Correctly form the path to the image
         image_path = os.path.join(os.getcwd(), 'img', f'{self.name.lower()}.png')
@@ -91,6 +90,7 @@ class Card(ABC):
     def __str__(self):
         return (
             f"-=| Card Information| =-\n"
+            f"UUID: {self.uuid}\n"
             f"Name: {self.name}\n"
             f"Description: {self.description}\n"
             f"Tier: {self.tier}\n"
@@ -228,14 +228,3 @@ cards_list = [
     Copycat("Copycat", "I am thou, thou art I.", 5, 2, 2, CardClass.RARE, "When any unit on the board activates its ability, gain 2 attack and 2 HP permanently. The Copycat is you, and you are the Copycat."),
     UnceasingVoid("The Unceasing Void", "Infinity.", 5, 30, 0, CardClass.RARE, "While The Unceasing Void is on the board, you cannot die. Infinity is a long time.")
 ]
-
-def print_cards():
-    for card in cards_list:
-        print(card.get_card_info())
-        print()
-
-def get_all_cards():
-    return cards_list
-
-# Debugging
-# print_cards()

@@ -19,10 +19,25 @@ class User:
         self.dead_deck.cards.append(card)
         self.alive_deck.cards.remove(card)
 
-    def play_card(self, card): # todo: Play card from hand into the turn, which in turn plays it into the match
-        self.mana -= card.tier
-        self.cards_on_board.cards.append(card)
-        self.hand.cards.remove(card)
+    def play_card(self, card):
+        if self.mana > 0:
+            self.mana -= card.tier
+            self.cards_on_board.cards.append(card)
+            self.hand.cards.remove(card)
+            return True
+        else:
+            print("No mana to play a card.")
+            return False
+        # print(f"DEBUG play_card: Playing card {card.name} with tier {card.tier}.")
+        # print(f"DEBUG play_card: Hand before playing card with UUID {card.uuid}:")
+        # print(self.hand)
+        # print(f"DEBUG play_card: Cards on board before playing card with UUID {card.uuid}:")
+        # print(self.cards_on_board)
+        # print(f"DEBUG play_card: Hand after playing card with UUID {card.uuid}:")
+        # print(self.hand)
+        # print(f"DEBUG play_card: Cards on board after playing card with UUID {card.uuid}:")
+        # print(self.cards_on_board)
+        # print(f"DEBUG play_card: Card {card.name} played. Mana remaining: {self.mana}.")
 
     def play_turn(self):
         #todo: Call upon turn to take the cards from the board and play them
@@ -83,19 +98,48 @@ class Enemy(User):
             current_card = self.create_new_card(current_tier, current_tier)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
-            print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")
-            print(f"DEBUG: Current tier score: {current_tier_score}.")
+            print(f"DEBUG enemy.__init__: Added card {current_card.name} with tier {current_card.tier}.")
+            print(f"DEBUG enemy.__init__: Current tier score: {current_tier_score}.")
         for i in range(2):
             current_card = self.create_new_card(current_tier - 1, current_tier -1)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
-            print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")
-            print(f"DEBUG: Current tier score: {current_tier_score}.")
+            print(f"DEBUG enemy.__init__: Added card {current_card.name} with tier {current_card.tier}.")
+            print(f"DEBUG enemy.__init__: Current tier score: {current_tier_score}.")
         while current_tier_score < tier_score:
             current_card = self.create_new_card(1, current_tier)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
-            print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")
-            print(f"DEBUG: Current tier score: {current_tier_score}.")
-        print(f"DEBUG: Enemy deck generated with {len(self.alive_deck.cards)} cards.")
+            print(f"DEBUG enemy.__init__: Added card {current_card.name} with tier {current_card.tier}.")
+            print(f"DEBUG enemy.__init__: Current tier score: {current_tier_score}.")
+            print(f"DEBUG enemy.__init__: Enemy deck generated with {len(self.alive_deck.cards)} cards.")
 
+    def play_turn(self):
+        # Sort the hand by tier in descending order to try playing powerful cards first
+        self.hand.cards.sort(key=lambda x: x.tier, reverse=True)
+        played_cards = self.ai(self.mana, self.hand.cards)
+        for card in played_cards:
+            self.play_card(card)
+
+    def ai(self, totalMana, hand):
+        if totalMana == 0 or not hand:
+            return []
+
+        # Consider the most powerful card first (already sorted)
+        current_card = hand[0]
+
+        # If the card's mana cost is exactly the totalMana, or it fits within the mana, play it
+        if current_card.tier <= totalMana:
+            # Include this card in the selection and see if more can be played
+            with_card = [current_card] + self.ai(totalMana - current_card.tier, hand[1:])
+            # Also consider not playing this card and see which option is better
+            without_card = self.ai(totalMana, hand[1:])
+
+            # Choose the option that uses the most mana efficiently or maximizes the number of cards played
+            if sum(card.tier for card in with_card) > sum(card.tier for card in without_card):
+                return with_card
+            else:
+                return without_card
+        else:
+            # Skip this card as it's too costly to play
+            return self.ai(totalMana, hand[1:])

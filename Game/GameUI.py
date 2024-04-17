@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtCore import QTimer, Qt, QRect, QPoint
-from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette
+from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette, QTextOption, QFontMetrics
 from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
 
 class GameUI(QWidget):
@@ -45,7 +45,6 @@ class GameUI(QWidget):
     def initUI(self):
         self.setGeometry(300, 300, 1600, 900)
         self.setWindowTitle('CardMaster')
-        # self.setStyleSheet("background-color: rgb(59, 178, 115);")
 
         # Load and set background image
         self.bg_pixmap = QPixmap('img/field bg.png')
@@ -61,7 +60,7 @@ class GameUI(QWidget):
         # Timer for animation
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
-        self.timer.start(1000 / 120)  # roughly 120 fps
+        self.timer.start(1000 // 120)  # roughly 120 fps
 
         # Animation state initialization
         self.animation_states = {}
@@ -73,28 +72,47 @@ class GameUI(QWidget):
         # Create a main layout
         main_layout = QVBoxLayout()  # Vertical box layout
 
+        # Enemy Stats Label
+        self.enemy_stats_label = QLabel(
+            f"Enemy\nHP: {self.game_manager.current_match.enemy.hp}\nMana: {self.game_manager.current_match.enemy.mana}")
+        self.enemy_stats_label.setFont(QFont('Arial', 42))
+        self.enemy_stats_label.setStyleSheet("color: black;")
+
+        # Player Stats Label
+        self.player_stats_label = QLabel(f"Player\nHP: {self.game_manager.current_match.player.hp}\nMana: {self.game_manager.current_match.player.mana}")
+        self.player_stats_label.setFont(QFont('Arial', 42))
+        self.player_stats_label.setStyleSheet("color: black;")
+
         # Create a horizontal layout for the buttons
         button_layout = QHBoxLayout()
-
-        # Add stretch to push everything to the right
-        button_layout.addStretch(1)
+        button_layout.addStretch(1)  # Push buttons to the right
 
         # Play Card(s) Button
         self.play_cards_button = QPushButton("Play Card(s)")
-        self.play_cards_button.setEnabled(False)  # Initially disabled
-        self.play_cards_button.setMinimumSize(160, 60)  # Set a minimum size for the button
+        self.play_cards_button.setEnabled(False)
+        self.play_cards_button.setMinimumSize(160, 60)
         self.play_cards_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
         button_layout.addWidget(self.play_cards_button)
 
         # End Turn Button
         self.end_turn_button = QPushButton("End Turn")
-        self.end_turn_button.setMinimumSize(160, 60)  # Same size as the Play Card button
+        self.end_turn_button.setMinimumSize(160, 60)
         self.end_turn_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
         button_layout.addWidget(self.end_turn_button)
 
-        # Add the buttons layout to the main layout
-        main_layout.addStretch(1)  # Add stretch to push everything to the bottom
-        main_layout.addLayout(button_layout)
+        # Layout for stats
+        stats_layout = QVBoxLayout()
+        stats_layout.addWidget(self.enemy_stats_label)
+        stats_layout.addStretch(1)  # Push player stats to the bottom
+        stats_layout.addWidget(self.player_stats_label)
+
+        # Combine stats and buttons into a final layout
+        final_layout = QHBoxLayout()
+        final_layout.addLayout(stats_layout)  # Stats on the left
+        final_layout.addStretch(1)  # Center the game area
+        final_layout.addLayout(button_layout)  # Buttons on the right
+
+        main_layout.addLayout(final_layout)
 
         # Set the main layout to the central widget or the main window
         self.setLayout(main_layout)
@@ -104,19 +122,19 @@ class GameUI(QWidget):
         # For player's cards
         for card in self.game_manager.player.hand.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(True)
-            print("DEBUG: Player card UUID:", card.uuid)
+            # print("DEBUG: Player card UUID:", card.uuid)
         # For enemy's cards
         for card in self.game_manager.current_match.enemy.hand.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(False)
-            print("DEBUG: Enemy card UUID:", card.uuid)
+            # print("DEBUG: Enemy card UUID:", card.uuid)
 
         for card in self.game_manager.player.cards_on_board.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(True)
-            print("DEBUG: Player card on board UUID:", card.uuid)
+            # print("DEBUG: Player card on board UUID:", card.uuid)
 
         for card in self.game_manager.current_match.enemy.cards_on_board.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(False)
-            print("DEBUG: Enemy card on board UUID:", card.uuid)
+            # print("DEBUG: Enemy card on board UUID:", card.uuid)
 
     def create_card_animation_state(self, is_player_card):
         return {
@@ -125,8 +143,13 @@ class GameUI(QWidget):
             'small': True,
             'tooltip_shown': False,
             'clicked': False,
-            'player_card': is_player_card  # This indicates whether the card belongs to the player
+            'player_card': is_player_card,
+            'is_on_board': False
         }
+
+    def update_stats(self):
+        self.enemy_stats_label.setText(f"Enemy\nHP: {self.game_manager.current_match.enemy.hp}\nMana: {self.game_manager.current_match.enemy.mana}")
+        self.player_stats_label.setText(f"Player\nHP: {self.game_manager.current_match.player.hp}\nMana: {self.game_manager.current_match.player.mana}")
 
     def update_animation_states(self):
         # Rebuild the entire animation_states to reflect current game state
@@ -143,8 +166,9 @@ class GameUI(QWidget):
         self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8,
                        self.height() // 4 - 50)
 
-        self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 50)
-        self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8, self.height() // 2 - 50)
+        self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 75, "board")
+        self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8, self.height() // 2 - 80, "board")
+        self.update_stats()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -153,7 +177,7 @@ class GameUI(QWidget):
                 print("DEBUG: Checking card", uuid)
                 card_rect = QRect(state['x'] - state['width'] // 2, state['y'] - state['height'] // 2, state['width'],
                                   state['height'])
-                if card_rect.contains(event.pos()) and state['player_card']:
+                if card_rect.contains(event.pos()) and state['player_card'] and not state['is_on_board']:
                     state['clicked'] = not state['clicked']
                     clicked_uuid = uuid
                     break
@@ -164,9 +188,9 @@ class GameUI(QWidget):
     def handle_card_click(self, uuid):
         card = self.get_card_by_uuid(uuid)
         if self.animation_states[uuid]['clicked']:
-            print(f"Card {card.name} is clicked!")
+            print(f"DEBUG handle_card_click: Card {card.name} is clicked!")
         else:
-            print(f"Card {card.name} is unclicked!")
+            print(f"DEBUG handle_card_click: Card {card.name} is unclicked!")
 
     def reset_card_states(self):
         for state in self.animation_states.values():
@@ -174,7 +198,14 @@ class GameUI(QWidget):
         self.update_play_cards_button()  # Update the button states
 
     def get_card_by_uuid(self, uuid):
-        all_cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
+        all_cards = (self.game_manager.player.hand.cards +
+                     self.game_manager.current_match.enemy.hand.cards +
+                     self.game_manager.current_match.player.cards_on_board.cards +
+                     self.game_manager.current_match.enemy.cards_on_board.cards +
+                     self.game_manager.player.dead_deck.cards +
+                     self.game_manager.current_match.enemy.dead_deck.cards +
+                     self.game_manager.player.alive_deck.cards +
+                     self.game_manager.current_match.enemy.alive_deck.cards)
         for card in all_cards:
             if card.uuid == uuid:
                 return card
@@ -182,7 +213,7 @@ class GameUI(QWidget):
 
     def update_play_cards_button(self):
         any_card_clicked = any(
-            state['clicked'] for state in self.animation_states.values() if state.get('player_card', False))
+            state['clicked'] for state in self.animation_states.values() if state.get('player_card', False) and not state.get('is_on_board', False))
         self.play_cards_button.setEnabled(any_card_clicked)
 
     def end_turn(self):
@@ -196,12 +227,13 @@ class GameUI(QWidget):
 
     def play_cards(self):
         for uuid, state in self.animation_states.items():
-            if state['clicked'] and state['player_card']:
+            if state['clicked'] and state['player_card'] and not state['is_on_board']:
                 card = self.get_card_by_uuid(uuid)
-                self.game_manager.current_match.player.play_card(card)
+                if self.game_manager.current_match.player.play_card(card):
+                    state['is_on_board'] = True
         self.reset_card_states()
 
-    def draw_deck(self, painter, deck, x, y):
+    def draw_deck(self, painter, deck, x, y, type="hand"):
         num_cards = len(deck.cards)
         card_width = 100  # Standard width for each card
 
@@ -217,9 +249,13 @@ class GameUI(QWidget):
             # Keep standard spacing if there is enough space
             card_spacing = 120  # This can be adjusted if you want a different default spacing
 
-        # Calculate the adjusted starting x position to center the cards
-        total_used_width = card_spacing * (num_cards - 1) + card_width
-        adjusted_x = x + (max_total_width - total_used_width) // 2  # Center the cards
+        if type == "board":
+            # Cards start from the left edge
+            adjusted_x = x
+        else:
+            # Calculate the adjusted starting x position to center the cards
+            total_used_width = card_spacing * (num_cards - 1) + card_width
+            adjusted_x = x + (max_total_width - total_used_width) // 2  # Center the cards
 
         i = 0
         for card in deck.cards:
@@ -255,7 +291,20 @@ class GameUI(QWidget):
         card_rect = QRect(x - state['width'] // 2, y - state['height'] // 2, state['width'], state['height'])
 
         # Paint background of the card
-        painter.fillRect(card_rect, QColor(210, 210, 210) if state['small'] else QColor(180, 180, 180))
+        if card.color.name == "RED":
+            card_color = QColor(247, 78, 59)
+        elif card.color.name == "GREEN":
+            card_color = QColor(143, 217, 65)
+        elif card.color.name == "BLUE":
+            card_color = QColor(65, 143, 217)
+        elif card.color.name == "YELLOW":
+            card_color = QColor(242, 192, 53)
+        elif card.color.name == "PURPLE":
+            card_color = QColor(143, 65, 217)
+        else:
+            card_color = QColor(200, 200, 200)
+
+        painter.fillRect(card_rect, card_color if state['small'] else card_color.darker(125))
         painter.setPen(QColor(0, 0, 0))
         painter.drawRect(card_rect)
 
@@ -287,15 +336,47 @@ class GameUI(QWidget):
                          Qt.AlignBottom | Qt.AlignRight, attack_label)
 
         # Draw name centered above the icon
-        painter.drawText(x - state['width'] // 4, icon_rect.top() - font_size - 16,
-                         state['width'] // 2, font_size + 6, Qt.AlignCenter, card.name)
+        # Define the rectangle where the name will be drawn
+        name_rect = QRect(x - state['width'] // 2, icon_rect.top() - 25, state['width'],
+                          20)  # Adjust height as needed to fit potentially wrapped text
+
+        # Set text options to align center and wrap text
+        text_option = QTextOption()
+        text_option.setAlignment(Qt.AlignCenter | Qt.TextWordWrap)
+
+        # Set the font and calculate if text needs wrapping
+        font = QFont('Arial', font_size)  # You may adjust the font size based on space or other criteria
+        painter.setFont(font)
+
+        # Measure text to see if it fits in the provided rectangle
+        font_metrics = QFontMetrics(font)
+        required_width = font_metrics.horizontalAdvance(card.name)
+
+        # Compare required width with available width
+        if required_width > name_rect.width():
+            # If text is too wide, adjust font size or rectangle
+            font.setPointSize(font_size - 2)  # Decrease font size
+            painter.setFont(font)
+            # Optionally adjust the rectangle height based on new font size
+            text_height = font_metrics.height() * 2  # Assuming it might need two lines now
+            name_rect.setHeight(text_height)
+
+        # Draw the name text with the adjusted settings
+        painter.drawText(name_rect, Qt.TextWordWrap | Qt.AlignCenter, card.name)
 
         if state['clicked']:
-            # Draw a border around the card when clicked
-            painter.setPen(QColor(255, 0, 0))
-            painter.drawRect(card_rect.adjusted(2, 2, -2, -2))
-            painter.setPen(QColor(255, 255, 0))
-            painter.drawRect(card_rect.adjusted(3, 3, -3, -3))
+            # Draw a thick border around the card when clicked
+            border_width = 4  # Adjust this value to control border thickness (number of outlines)
+
+            # Define the base color for the border
+            base_color = QColor(230, 0, 0)  # Adjust color as needed
+
+            # Draw outlines with increasing offsets to create a thicker border effect
+            for i in range(border_width):
+                adjusted_rect = card_rect.adjusted(i, i, -i, -i)
+                pen_color = base_color.darker(100 + 15 * i)
+                painter.setPen(pen_color)
+                painter.drawRect(adjusted_rect)
 
         if not state['small']:
             # Only draw detailed text for large cards
@@ -313,7 +394,7 @@ class GameUI(QWidget):
                 if self.current_hover_uuid is not None:  # There was a previous card being hovered
                     self.animation_states[self.current_hover_uuid]['tooltip_shown'] = False
                 self.current_hover_uuid = uuid
-                self.tooltip.setText(f"{card.description}\n\nEffect: {card.effect_description}")
+                self.tooltip.setText(f"{card.description}\n\nType: {card.card_class.name}\n\nEffect: {card.effect_description}")
                 tooltip_pos = self.mapToGlobal(card_rect.bottomRight() + QPoint(20, -40))
                 self.tooltip.move(tooltip_pos)
                 self.tooltip.adjustSize()
@@ -345,7 +426,7 @@ class CustomTooltip(QWidget):
         # Calculate the required size based on the text
         width = self.fontMetrics().boundingRect(QRect(0, 0, 200, 1000), Qt.TextWordWrap, self.text).width()
         height = self.fontMetrics().boundingRect(QRect(0, 0, width, 1000), Qt.TextWordWrap, self.text).height()
-        self.resize(width + 2 * self.text_margin, height + 4 * self.text_margin)
+        self.resize(width + 2 * self.text_margin, height + 2 * self.text_margin)
 
     def paintEvent(self, event):
         painter = QPainter(self)
