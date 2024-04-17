@@ -2,7 +2,7 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtCore import QTimer, Qt, QRect, QPoint
 from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette, QTextOption, QFontMetrics
-from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
+from GameManager import GameManager
 
 class GameUI(QWidget):
     def __init__(self):
@@ -198,13 +198,13 @@ class GameUI(QWidget):
         self.update_play_cards_button()  # Update the button states
 
     def get_card_by_uuid(self, uuid):
-        all_cards = (self.game_manager.player.hand.cards +
+        all_cards = (self.game_manager.current_match.player.hand.cards +
                      self.game_manager.current_match.enemy.hand.cards +
                      self.game_manager.current_match.player.cards_on_board.cards +
                      self.game_manager.current_match.enemy.cards_on_board.cards +
-                     self.game_manager.player.dead_deck.cards +
+                     self.game_manager.current_match.player.dead_deck.cards +
                      self.game_manager.current_match.enemy.dead_deck.cards +
-                     self.game_manager.player.alive_deck.cards +
+                     self.game_manager.current_match.player.alive_deck.cards +
                      self.game_manager.current_match.enemy.alive_deck.cards)
         for card in all_cards:
             if card.uuid == uuid:

@@ -20,7 +20,6 @@ class GameManager:
 
     def start_match(self):
         """Start a new match."""
-
         self.current_match_number += 1
         # Increase the tier every 2 matches
         if self.current_match_number % 2 == 0:
@@ -41,7 +40,7 @@ class GameManager:
         if self.current_match.phase.name == "DRAW":
             self.current_match.cycle_phase()
         else:
-            print("Error: Match did not start in DRAW phase.")
+            print("DEBUG Error start_match: Match did not start in DRAW phase.")
 
     def get_game_stats(self):
         """Return a string of the current game statistics."""

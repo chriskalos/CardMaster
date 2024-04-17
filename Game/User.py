@@ -1,14 +1,14 @@
 import copy
 import uuid
 
-from Deck import Deck
+from Card import Deck
 
 
 class User:
     def __init__(self):
         self.name = ""
         self.hp = 10
-        self.mana = 0 # todo: Mana = current tier + 2
+        self.mana = 0  # Mana = current tier + 2, given by Match
         self.alive_deck = Deck()
         self.dead_deck = Deck()
         self.cards_on_board = Deck()
@@ -75,9 +75,13 @@ class Player(User):
     def __init__(self):
         super().__init__()
 
+        self.alive_deck.owner = self
+        self.dead_deck.owner = self
+        self.cards_on_board.owner = self
+
         # Generate the player's deck only once at the start of the game
         """Generate a deck of randomly picked cards from the available card list."""
-        for i in range(7): # Start with 7 cards
+        for i in range(7):  # Start with 7 cards
             new_card = self.create_new_card(1, 1)
             self.alive_deck.cards.append(new_card)
         self.alive_deck.shuffle()  # Optional: Shuffle the deck after generation
@@ -87,6 +91,10 @@ class Player(User):
 class Enemy(User):
     def __init__(self, current_match: int, current_tier: int):
         super().__init__()
+
+        self.alive_deck.owner = self
+        self.dead_deck.owner = self
+        self.cards_on_board.owner = self
 
         tier_score = 2 + current_match * 5
         # The enemy should always have the maximum number of cards possible for the current match, as if they are a player buying every card in the store every round.
