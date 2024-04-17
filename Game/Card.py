@@ -1,4 +1,5 @@
 import os
+import uuid
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Optional
@@ -54,7 +55,9 @@ class Card(ABC):
             raise TypeError("Card class must be an instance of CardClass.")
         if not isinstance(effect_description, str):
             raise TypeError("Effect description must be a string.")
-        
+
+        # Generate unique UUID as soon as the card is instantiated
+        self.uuid = None
         self.name = name
         self.description = description
         self.tier = tier

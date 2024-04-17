@@ -1,3 +1,6 @@
+import copy
+import uuid
+
 from Deck import Deck
 
 
@@ -46,6 +49,11 @@ class User:
             # todo: End round, player loses
             pass
 
+    def create_new_card(self, lowest_tier: int, highest_tier: int):
+        new_card = copy.copy(self.alive_deck.randomiser(lowest_tier, highest_tier))
+        new_card.uuid = uuid.uuid4()
+        return new_card
+
     
 
 class Player(User):
@@ -55,7 +63,8 @@ class Player(User):
         # Generate the player's deck only once at the start of the game
         """Generate a deck of randomly picked cards from the available card list."""
         for i in range(7): # Start with 7 cards
-            self.alive_deck.cards.append(self.alive_deck.randomiser(1, 1))
+            new_card = self.create_new_card(1, 1)
+            self.alive_deck.cards.append(new_card)
         self.alive_deck.shuffle()  # Optional: Shuffle the deck after generation
 
     
@@ -71,19 +80,19 @@ class Enemy(User):
         deck = []
         # The enemy gets 2 cards of the current tier, 2 cards of the previous tier, and then random cards until they reach the deck size indicated by tier_score.
         for i in range(2):
-            current_card = self.alive_deck.randomiser(current_tier, current_tier)
+            current_card = self.create_new_card(current_tier, current_tier)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
             print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")
             print(f"DEBUG: Current tier score: {current_tier_score}.")
         for i in range(2):
-            current_card = self.alive_deck.randomiser(current_tier - 1, current_tier - 1)
+            current_card = self.create_new_card(current_tier - 1, current_tier -1)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
             print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")
             print(f"DEBUG: Current tier score: {current_tier_score}.")
         while current_tier_score < tier_score:
-            current_card = self.alive_deck.randomiser(1, current_tier)
+            current_card = self.create_new_card(1, current_tier)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
             print(f"DEBUG: Added card {current_card.name} with tier {current_card.tier}.")

@@ -4,7 +4,7 @@ from PySide6.QtCore import QTimer, Qt, QRect, QPoint
 from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette
 from GameManager import GameManager  # Assuming GameManager and Card classes are defined in this module
 
-class CardGameUI(QWidget):
+class GameUI(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -17,14 +17,14 @@ class CardGameUI(QWidget):
         self.hover_timer = QTimer(self)
         self.hover_timer.setSingleShot(True)
         self.hover_timer.timeout.connect(self.hide_tooltip)
-        self.current_hover_index = None  # Track the index of the currently hovered card
+        self.current_hover_uuid = None  # Track the uuid of the currently hovered card
         self.play_cards_button.clicked.connect(self.play_cards)
         self.end_turn_button.clicked.connect(self.end_turn)
 
     def hide_tooltip(self):
         if not any(self.animation_states[i]['tooltip_shown'] for i in self.animation_states):
             self.tooltip.hide()
-            self.current_hover_index = None
+            self.current_hover_uuid = None
 
     def resizeEvent(self, event):
         # Maintain a 16:9 aspect ratio
@@ -100,73 +100,86 @@ class CardGameUI(QWidget):
         # Set the main layout to the central widget or the main window
         self.setLayout(main_layout)
 
-    # In your init_animation_states method:
     def init_animation_states(self):
-        # Initialize states for player's cards
-        for i, card in enumerate(self.game_manager.player.hand.cards):
-            self.animation_states[i] = {
-                'width': 100, 'height': 150,
-                'target_width': 100, 'target_height': 150,
-                'small': True,
-                'tooltip_shown': False,
-                'clicked': False,
-                'player_card': True  # This card belongs to the player
-            }
+        self.animation_states = {}
+        # For player's cards
+        for card in self.game_manager.player.hand.cards:
+            self.animation_states[card.uuid] = self.create_card_animation_state(True)
+            print("DEBUG: Player card UUID:", card.uuid)
+        # For enemy's cards
+        for card in self.game_manager.current_match.enemy.hand.cards:
+            self.animation_states[card.uuid] = self.create_card_animation_state(False)
+            print("DEBUG: Enemy card UUID:", card.uuid)
 
-        # Initialize states for enemy's cards
-        num_player_cards = len(self.game_manager.player.hand.cards)
-        for j, card in enumerate(self.game_manager.current_match.enemy.hand.cards):
-            self.animation_states[num_player_cards + j] = {
-                'width': 100, 'height': 150,
-                'target_width': 100, 'target_height': 150,
-                'small': True,
-                'tooltip_shown': False,
-                'clicked': False,
-                'player_card': False  # This card belongs to the enemy
-            }
+        for card in self.game_manager.player.cards_on_board.cards:
+            self.animation_states[card.uuid] = self.create_card_animation_state(True)
+            print("DEBUG: Player card on board UUID:", card.uuid)
+
+        for card in self.game_manager.current_match.enemy.cards_on_board.cards:
+            self.animation_states[card.uuid] = self.create_card_animation_state(False)
+            print("DEBUG: Enemy card on board UUID:", card.uuid)
+
+    def create_card_animation_state(self, is_player_card):
+        return {
+            'width': 100, 'height': 150,
+            'target_width': 100, 'target_height': 150,
+            'small': True,
+            'tooltip_shown': False,
+            'clicked': False,
+            'player_card': is_player_card  # This indicates whether the card belongs to the player
+        }
+
+    def update_animation_states(self):
+        # Rebuild the entire animation_states to reflect current game state
+        self.animation_states = {}
+        self.init_animation_states()  # You may need to modify this function to work with dynamic changes
 
     def interpolate(self, value, target, speed):
         return value + (target - value) * speed
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 + 50, 0)
-        self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8, self.height() // 4 - 50,
-                       len(self.game_manager.player.hand.cards))
 
-        self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 50, len(self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards))
-        self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8, self.height() // 2 - 50, len(self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards + self.game_manager.player.cards_on_board.cards))
+        self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 + 50)
+        self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8,
+                       self.height() // 4 - 50)
+
+        self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 50)
+        self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8, self.height() // 2 - 50)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            for index, state in self.animation_states.items():
-                card_rect = QRect(state['x'] - state['width'] // 2, state['y'] - state['height'] // 2,
-                                  state['width'], state['height'])
+            clicked_uuid = None
+            for uuid, state in self.animation_states.items():
+                print("DEBUG: Checking card", uuid)
+                card_rect = QRect(state['x'] - state['width'] // 2, state['y'] - state['height'] // 2, state['width'],
+                                  state['height'])
                 if card_rect.contains(event.pos()) and state['player_card']:
-                    state['clicked'] = not state['clicked']  # Toggle the clicked state
-                    self.handle_card_click(index)  # Call a method to handle the card click
+                    state['clicked'] = not state['clicked']
+                    clicked_uuid = uuid
                     break
+            if clicked_uuid:
+                self.handle_card_click(clicked_uuid)
             self.update_play_cards_button()
 
-    def handle_card_click(self, index):
-        card = self.get_card_by_index(index)
-        if self.animation_states[index]['clicked']:
-            # Perform actions when the card is clicked
+    def handle_card_click(self, uuid):
+        card = self.get_card_by_uuid(uuid)
+        if self.animation_states[uuid]['clicked']:
             print(f"Card {card.name} is clicked!")
-            # Add your desired actions here
         else:
-            # Perform actions when the card is unclicked
             print(f"Card {card.name} is unclicked!")
-            # Add your desired actions here
 
     def reset_card_states(self):
         for state in self.animation_states.values():
             state['clicked'] = False  # Reset the clicked state of all cards
         self.update_play_cards_button()  # Update the button states
 
-    def get_card_by_index(self, index):
-        cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
-        return cards[index]
+    def get_card_by_uuid(self, uuid):
+        all_cards = self.game_manager.player.hand.cards + self.game_manager.current_match.enemy.hand.cards
+        for card in all_cards:
+            if card.uuid == uuid:
+                return card
+        return None
 
     def update_play_cards_button(self):
         any_card_clicked = any(
@@ -183,13 +196,13 @@ class CardGameUI(QWidget):
             print("It's not the PLAY phase!")
 
     def play_cards(self):
-        for index, state in self.animation_states.items():
+        for uuid, state in self.animation_states.items():
             if state['clicked'] and state['player_card']:
-                card = self.get_card_by_index(index)
+                card = self.get_card_by_uuid(uuid)
                 self.game_manager.current_match.player.play_card(card)
         self.reset_card_states()
 
-    def draw_deck(self, painter, deck, x, y, start_index=0):
+    def draw_deck(self, painter, deck, x, y):
         num_cards = len(deck.cards)
         card_width = 100  # Standard width for each card
 
@@ -209,13 +222,15 @@ class CardGameUI(QWidget):
         total_used_width = card_spacing * (num_cards - 1) + card_width
         adjusted_x = x + (max_total_width - total_used_width) // 2  # Center the cards
 
-        for i, card in enumerate(deck.cards):
-            index = start_index + i
+        i = 0
+        for card in deck.cards:
             card_x = adjusted_x + i * card_spacing
-            self.draw_card(painter, card, card_x, y, self.animation_states, index)
+            i += 1
+            self.draw_card(painter, card, card_x, y, self.animation_states)
 
-    def draw_card(self, painter, card, x, y, animation_states, index):
-        state = animation_states[index]
+    def draw_card(self, painter, card, x, y, animation_states):
+        uuid = card.uuid
+        state = animation_states[card.uuid]
         mouse_pos = self.mapFromGlobal(self.cursor().pos())
         card_rect = QRect(x - state['width'] // 2, y - state['height'] // 2, state['width'], state['height'])
 
@@ -225,12 +240,8 @@ class CardGameUI(QWidget):
         # Adjust the card's target size only if the mouse state changes to prevent flickering
         if card_rect.contains(mouse_pos) and state['small']:
             state['small'] = False
-            # state['target_width'] = 140
-            # state['target_height'] = 210
         elif not card_rect.contains(mouse_pos) and not state['small']:
             state['small'] = True
-            # state['target_width'] = 100
-            # state['target_height'] = 150
 
         if state['small']:
             state['target_width'] = 100
@@ -299,10 +310,10 @@ class CardGameUI(QWidget):
             painter.setFont(detail_font)
 
         if card_rect.contains(mouse_pos):
-            if self.current_hover_index != index:  # New card hovered
-                if self.current_hover_index is not None:  # There was a previous card being hovered
-                    self.animation_states[self.current_hover_index]['tooltip_shown'] = False
-                self.current_hover_index = index
+            if self.current_hover_uuid != uuid:  # New card hovered
+                if self.current_hover_uuid is not None:  # There was a previous card being hovered
+                    self.animation_states[self.current_hover_uuid]['tooltip_shown'] = False
+                self.current_hover_uuid = uuid
                 self.tooltip.setText(f"{card.description}\n\nEffect: {card.effect_description}")
                 tooltip_pos = self.mapToGlobal(card_rect.bottomRight() + QPoint(20, -40))
                 self.tooltip.move(tooltip_pos)
@@ -313,7 +324,7 @@ class CardGameUI(QWidget):
         else:
             if state['tooltip_shown']:
                 state['tooltip_shown'] = False  # Mark the tooltip as no longer shown for this card
-                if self.current_hover_index == index:  # Check if this is the last card hovered over
+                if self.current_hover_uuid == uuid:  # Check if this is the last card hovered over
                     self.hover_timer.start(100)  # Delay before hiding tooltip to check if another card is hovered
 
 class CustomTooltip(QWidget):
@@ -353,6 +364,6 @@ class CustomTooltip(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = CardGameUI()
+    ex = GameUI()
     ex.show()
     sys.exit(app.exec())
