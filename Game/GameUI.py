@@ -51,7 +51,6 @@ class GameUI(QWidget):
         self.bg_pixmap = QPixmap('img/field bg.png')
         self.applyBackground()
 
-
         # Set up the game logic
         self.game_manager = GameManager()
         self.game_manager.start_match()
