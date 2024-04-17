@@ -133,11 +133,14 @@ class Card(ABC):
 
     def perform_attack(self, position: int, enemy_board: Deck):
         """Method to perform an attack on a target"""
+        # Check if the target is the enemy player or a card
+        target = None
         if enemy_board.cards[position] is None:
-            self.temp_target = enemy_board.owner
+            target = enemy_board.owner
         else:
-            self.temp_target = enemy_board.cards[position]
-        target = self.temp_target
+            target = enemy_board.cards[position]
+
+        # Check if the card is frozen or has a shield
         if self.frozen:
             print(f"DEBUG {self.name}: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
@@ -146,11 +149,14 @@ class Card(ABC):
             print(f"DEBUG {self.name}: Target {target.name} has a shield and takes no damage.")
             target.shield = False
             return
+
+        # Perform the attack
         damage_dealt = 0
         for i in range(self.attack_times):
             damage_dealt += self.attack
-            print(f"DEBUG {self.name}: Attacks {target.name} for {self.attack} damage!")
+            print(f"DEBUG {self.name}: Attacks {target.name} for {self.attack} damage! Run: {i+1}/{self.attack_times}")
             target.hp -= self.attack
+            print(f"DEBUG {target.name}: HP: {target.hp}")
 
         if self.life_steal:
             self.hp += damage_dealt
@@ -158,9 +164,8 @@ class Card(ABC):
             self.life_steal = False
             print(f"DEBUG {self.name}: Disabled life steal.")
 
-        target.check_hp()
-        self.temp_target = None
-        self.reset_temp_stats()
+        # target.check_hp()
+        target = None
 
     def die(self):
         """Method to handle the card's death"""
@@ -197,17 +202,26 @@ class SimpleCard(Card):
 class Grag(Card):
     def activate_effect(self, position: int, friendly_board: Deck, enemy_board: Deck):
         print(f"DEBUG Grag: Add 2 health to the unit to the left")
-        target = friendly_board.cards[position-1]
-        target.hp += 2
-        target.check_hp()
+        if self.frozen:
+            print(f"DEBUG Grag: Target {self.name} is frozen and cannot attack.")
+            self.frozen = False
+            return
+        if position > 0:
+            target = friendly_board.cards[position-1]
+            target.hp += 2
+        # target.check_hp()
 
 class Pew(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
+        if self.frozen:
+            print(f"DEBUG Pew: Target {self.name} is frozen and cannot attack.")
+            self.frozen = False
+            return
         print(f"DEBUG Pew: Deal 2 damage to the unit in front of it")
         target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= 2
-        target.check_hp()
+        # target.check_hp()
 
 class Rasmus(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
@@ -241,7 +255,7 @@ class PewPew(Card):
         target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= 2
-        target.check_hp()
+        # target.check_hp()
 
 
 class Boom(Card):
@@ -254,7 +268,7 @@ class Boom(Card):
         target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= len(friendly_board.cards)
-        target.check_hp()
+        # target.check_hp()
 
 class Malik(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
@@ -282,7 +296,7 @@ class Cablooey(Card):
         target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= target.hp // 2
-        target.check_hp()
+        # target.check_hp()
 
 class Catapulty(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
@@ -294,7 +308,7 @@ class Catapulty(Card):
         target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= target.attack
-        target.check_hp()
+        # target.check_hp()
 
 class Nomnom(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
@@ -326,7 +340,7 @@ class TimeLord(Card):
         self.turns_active += 1
         if self.temp_enemy is target and self.turns_active == 1:
             target.hp = 0
-            target.check_hp()
+            # target.check_hp()
         else:
             self.temp_enemy = target
             self.turns_active = 0
@@ -344,7 +358,7 @@ class BigShot(Card):
             total_attack += card.attack
         if not target.shield:
             target.hp -= total_attack
-        target.check_hp()
+        # target.check_hp()
 
 class IceCube(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
@@ -383,7 +397,7 @@ class HungryAssassin(Card):
         if self.hp >= target.hp:
             self.hp -= target.hp
             target.hp = 0
-        target.check_hp()
+        # target.check_hp()
 
 class Flea(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):
@@ -413,7 +427,7 @@ class BigGunga(Card):
                     self.attack += target.attack // 2
                     print(f"DEBUG Big Gunga: Gained {target.hp // 2} HP and "
                           f"{target.attack // 2} attack from {target.name}.")
-        target.check_hp()
+        # target.check_hp()
 
 
 class Sender(Card):
@@ -427,7 +441,7 @@ class Sender(Card):
         left = friendly_board.cards[position-1]
         if not target.shield:
             target.hp -= left.attack + left.hp
-        target.check_hp()
+        # target.check_hp()
 
 class RoyalSummoner(Card):
     def activate_effect(self, position, friendly_board: Deck, enemy_board: Deck):

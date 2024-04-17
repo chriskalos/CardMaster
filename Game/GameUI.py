@@ -19,7 +19,7 @@ class GameUI(QWidget):
         self.hover_timer.timeout.connect(self.hide_tooltip)
         self.current_hover_uuid = None  # Track the uuid of the currently hovered card
         self.play_cards_button.clicked.connect(self.play_cards)
-        self.end_turn_button.clicked.connect(self.end_turn)
+        self.continue_button.clicked.connect(self.continue_turn)
 
     def hide_tooltip(self):
         if not any(self.animation_states[i]['tooltip_shown'] for i in self.animation_states):
@@ -95,10 +95,10 @@ class GameUI(QWidget):
         button_layout.addWidget(self.play_cards_button)
 
         # End Turn Button
-        self.end_turn_button = QPushButton("End Turn")
-        self.end_turn_button.setMinimumSize(160, 60)
-        self.end_turn_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
-        button_layout.addWidget(self.end_turn_button)
+        self.continue_button = QPushButton("-->")
+        self.continue_button.setMinimumSize(160, 60)
+        self.continue_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
+        button_layout.addWidget(self.continue_button)
 
         # Layout for stats
         stats_layout = QVBoxLayout()
@@ -216,14 +216,21 @@ class GameUI(QWidget):
             state['clicked'] for state in self.animation_states.values() if state.get('player_card', False) and not state.get('is_on_board', False))
         self.play_cards_button.setEnabled(any_card_clicked)
 
-    def end_turn(self):
+    def continue_turn(self):
+        # Submit the cards on the board and go to the effects phase of the battle
         print("Phase:", self.game_manager.current_match.phase.name)
         if self.game_manager.current_match.phase.name == 'PLAY':
             self.game_manager.current_match.cycle_phase()
             self.game_manager.current_match.player.play_turn()
             self.reset_card_states()
+        elif self.game_manager.current_match.phase.name == 'EFFECTS':
+            self.game_manager.current_match.cycle_phase()
+        elif self.game_manager.current_match.phase.name == 'ATTACKS':
+            self.game_manager.current_match.cycle_phase()
+        elif self.game_manager.current_match.phase.name == 'DRAW':
+            self.game_manager.current_match.cycle_phase()
         else:
-            print("It's not the PLAY phase!")
+            print("uhhhhhh")
 
     def play_cards(self):
         for uuid, state in self.animation_states.items():
@@ -426,7 +433,7 @@ class CustomTooltip(QWidget):
         # Calculate the required size based on the text
         width = self.fontMetrics().boundingRect(QRect(0, 0, 200, 1000), Qt.TextWordWrap, self.text).width()
         height = self.fontMetrics().boundingRect(QRect(0, 0, width, 1000), Qt.TextWordWrap, self.text).height()
-        self.resize(width + 2 * self.text_margin, height + 2 * self.text_margin)
+        self.resize(width + 2 * self.text_margin, height + 4 * self.text_margin)
 
     def paintEvent(self, event):
         painter = QPainter(self)

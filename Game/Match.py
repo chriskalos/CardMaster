@@ -18,23 +18,28 @@ class Match:
         self.phase = Phase.DRAW  # Initialize the phase to DRAW
 
         self.update_mana()
-        print(f"DEBUG: self.player.alive_deck.cards[0]: {self.player.alive_deck.cards[0]}")
+        # print(f"DEBUG: self.player.alive_deck.cards[0]: {self.player.alive_deck.cards[0]}")
 
     def update_mana(self):
         self.player.mana = self.tier + 2
         self.enemy.mana = self.tier + 2
 
     def activate_effects(self):
-        # Take the maximum of player's hands on board vs enemy's hands on board
+        # Take the maximum of player's cards on board vs enemy's cards on board
         max_hands = max(len(self.player.cards_on_board.cards), len(self.enemy.cards_on_board.cards))
         for i in range(max_hands):
             if i < max_hands:
-                print(f"DEBUG: Activating player card {self.player.cards_on_board.cards[i].name}.")
-                self.player.cards_on_board.cards[i].activate_effect(i, self.player.cards_on_board, self.enemy.cards_on_board)
-            if i < max_hands:
-                print(f"DEBUG: Activating player card {self.player.cards_on_board.cards[i].name}.")
-                self.enemy.cards_on_board.cards[i].activate_effect(i, self.enemy.cards_on_board, self.player.cards_on_board)
-        self.cycle_phase()
+                # If there is a card, activate the effect
+                if i < len(self.player.cards_on_board.cards):
+                    print(f"DEBUG: Activating player card {self.player.cards_on_board.cards[i].name}.")
+                    self.player.cards_on_board.cards[i].activate_effect(i, self.player.cards_on_board,
+                                                                        self.enemy.cards_on_board)
+                if i < len(self.enemy.cards_on_board.cards):
+                    print(f"DEBUG: Activating enemy card {self.enemy.cards_on_board.cards[i].name}.")
+                    self.enemy.cards_on_board.cards[i].activate_effect(i, self.enemy.cards_on_board,
+                                                                       self.player.cards_on_board)
+
+        # self.cycle_phase()
 
     def cycle_phase(self):
         """Cycle the phase to the next phase."""
@@ -46,18 +51,27 @@ class Match:
             self.phase = Phase.ATTACKS
         elif self.phase == Phase.ATTACKS:
             self.phase = Phase.DRAW
-        self.check_phase()
+        self.perform_phase()
 
     def perform_attacks(self):
         # Take the maximum of player's hands on board vs enemy's hands on board
+        print(f"DEBUG: Player cards on board BEFORE ATTACKS: {self.player.cards_on_board}")
+        print(f"DEBUG: Enemy cards on board BEFORE ATTACKS: {self.enemy.cards_on_board}")
+
         max_hands = max(len(self.player.cards_on_board.cards), len(self.enemy.cards_on_board.cards))
         for i in range(max_hands):
-            if i < max_hands:
-                print(f"DEBUG: Player attacking with card {self.player.cards_on_board.cards[i].name}.")
-                self.player.cards_on_board.cards[i].perform_attack(i, self.enemy.cards_on_board)
-            if i < max_hands:
+            if i < len(self.enemy.cards_on_board.cards):
                 print(f"DEBUG: Enemy attacking with card {self.enemy.cards_on_board.cards[i].name}.")
                 self.enemy.cards_on_board.cards[i].perform_attack(i, self.player.cards_on_board)
+            if i < len(self.player.cards_on_board.cards):
+                print(f"DEBUG: Player attacking with card {self.player.cards_on_board.cards[i].name}.")
+                self.player.cards_on_board.cards[i].perform_attack(i, self.enemy.cards_on_board)
+
+
+
+
+        print(f"DEBUG: Player cards on board AFTER ATTACKS: {self.player.cards_on_board}")
+        print(f"DEBUG: Enemy cards on board AFTER ATTACKS: {self.enemy.cards_on_board}")
 
     def draw_new_cards(self):
         # Clear dead cards from the board
@@ -77,8 +91,9 @@ class Match:
             self.enemy.draw_card()
 
 
-    def check_phase(self):
+    def perform_phase(self):
         if self.phase == Phase.DRAW:
+            self.draw_new_cards()
             print("DEBUG: Phase is now DRAW.")
         elif self.phase == Phase.PLAY:
             print("DEBUG: Phase is now PLAY.")
