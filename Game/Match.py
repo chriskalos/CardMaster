@@ -25,8 +25,8 @@ class Match:
         # print(f"DEBUG: self.player.alive_deck.cards[0]: {self.player.alive_deck.cards[0]}")
 
     def update_mana(self):
-        self.player.mana = self.tier + 2
-        self.enemy.mana = self.tier + 2
+        self.player.mana = self.tier + 3
+        self.enemy.mana = self.tier + 3
 
     def activate_effects(self):
         # Take the maximum of player's cards on board vs enemy's cards on board
@@ -43,8 +43,6 @@ class Match:
                     self.enemy.cards_on_board.cards[i].activate_effect(i, self.enemy.cards_on_board,
                                                                        self.player.cards_on_board)
                 self.max_hands = max(len(self.player.cards_on_board.cards), len(self.enemy.cards_on_board.cards))
-
-        # self.cycle_phase()
 
     def cycle_phase(self):
         """Cycle the phase to the next phase."""

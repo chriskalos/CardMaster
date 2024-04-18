@@ -38,6 +38,7 @@ class Deck:
         """Draw a card from the deck, removing it from the deck."""
         if not self.cards:
             raise ValueError("No cards left in the deck!")
+        self.shuffle()
         return self.cards.pop()
 
     def __str__(self):
@@ -138,6 +139,7 @@ class Card(ABC):
         self.hp = self.temp_hp
 
     def perform_attack(self, position: int, enemy_board: Deck):
+        self.check_hp()
         """Method to perform an attack on a target"""
         # Check if the target is the enemy player or a card
         target = None
@@ -343,8 +345,9 @@ class Catapulty(Card):
             target = enemy_board.owner
         else:
             target = enemy_board.cards[position]
-        if not target.shield:
-            target.hp -= target.attack
+            if not target.shield:
+                target.hp -= target.attack
+
         # target.check_hp()
 
 class Nomnom(Card):

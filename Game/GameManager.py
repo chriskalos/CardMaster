@@ -4,6 +4,7 @@ from Match import Match
 class GameManager:
     def __init__(self, debug_mode=False):
         self.debug_mode = debug_mode
+        self.game_over = False
         self.current_match_number = 0
         self.tier = 1
         self.player_wins = 0
@@ -11,10 +12,8 @@ class GameManager:
         self.current_match = None
         self.debug_mode = False
         self.player = None
-        if self.debug_mode:
-            self.player = Player('debug')
-        else:
-            self.player = Player('player')  # Gives the player a deck and draws 7 cards
+
+        self.start_match()
 
     def record_win(self):
         """Record a win for the player."""
@@ -30,12 +29,19 @@ class GameManager:
         # Increase the tier every 2 matches
         if self.current_match_number % 2 == 0:
             self.tier += 1
+            if self.tier > 5:
+                self.tier = 5
         # Make a new enemy for each round
+        deck_size = self.current_match_number * 2 + 10
+        if self.debug_mode:
+            self.player = Player(self.current_match_number, self.tier, 'Player', deck_size, 'debug')
+        else:
+            self.player = Player(self.current_match_number, self.tier, 'Player', deck_size, 'player')
         enemy = None
         if self.debug_mode:
-            enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'debug')
+            enemy = Enemy(self.current_match_number, self.tier, deck_size, 'Enemy', 'debug')
         else:
-            enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'enemy')
+            enemy = Enemy(self.current_match_number, self.tier, deck_size, 'Enemy', 'enemy')
         self.current_match = Match(self.tier, self.player, enemy)
 
     def check_match(self):
@@ -50,8 +56,10 @@ class GameManager:
         """End the current match."""
         if self.current_match.winner == self.player:
             self.record_win()
+            self.start_match()
         else:
             self.record_loss()
+            self.game_over = True
 
     def get_game_stats(self):
         """Return a string of the current game statistics."""
