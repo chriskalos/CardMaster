@@ -28,6 +28,10 @@ class Deck:
                                          card.tier >= lowest_tier and card.tier <= highest_tier and card.card_class.name != "RARE"])
         return chosen_card
 
+    # Return a list of copies of all cards in the game
+    def get_all_cards(self):
+        return [card for card in cards_list]
+
     def draw(self):
         """Draw a card from the deck, removing it from the deck."""
         if not self.cards:

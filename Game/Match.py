@@ -95,10 +95,10 @@ class Match:
         for card in enemy_dead_cards:
             self.enemy.cards_on_board.cards.remove(card)
 
-        # Draw cards for the player and the enemy until they have 5 in hand
-        while len(self.player.hand.cards) < self.player.hand_size:
+        # Draw as many cards as the player's hand size minus the number of cards in the player's hand
+        for i in range(self.player.hand_size - len(self.player.hand.cards)):
             self.player.draw_card()
-        while len(self.enemy.hand.cards) < self.enemy.hand_size:
+        for i in range(self.enemy.hand_size - len(self.enemy.hand.cards)):
             self.enemy.draw_card()
 
 

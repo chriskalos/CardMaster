@@ -1,13 +1,23 @@
 import sys
-from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip, QVBoxLayout, QHBoxLayout, QPushButton
+import copy
+import uuid
+
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QToolTip, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
+    QComboBox
 from PySide6.QtCore import QTimer, Qt, QRect, QPoint
 from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette, QTextOption, QFontMetrics
 from GameManager import GameManager
 
 
 class GameUI(QWidget):
-    def __init__(self):
+    def __init__(self, debug_mode=False):
         super().__init__()
+        self.debug_mode = debug_mode
+
+        if debug_mode:
+            self.game_manager = GameManager(debug_mode=True)
+        else:
+            self.game_manager = GameManager()
 
         self.animation_states = {}
         self.initUI()
@@ -25,7 +35,7 @@ class GameUI(QWidget):
         self.continue_button.clicked.connect(self.continue_turn)
 
     def print_debug(self, message):
-        if self.game_manager.debug_mode:
+        if self.debug_mode:
             print(message)
 
     def hide_tooltip(self):
@@ -57,8 +67,6 @@ class GameUI(QWidget):
         self.bg_pixmap = QPixmap('img/field bg.png')
         self.applyBackground()
 
-        # Set up the game logic
-        self.game_manager = GameManager()
         self.game_manager.start_match()
 
         # Font setup
@@ -105,6 +113,14 @@ class GameUI(QWidget):
         self.continue_button.setMinimumSize(160, 60)
         self.continue_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
         button_layout.addWidget(self.continue_button)
+
+        # Debug Menu Button
+        if self.debug_mode:
+            self.debug_button = QPushButton("Debug Menu")
+            self.debug_button.setMinimumSize(160, 60)
+            self.debug_button.setStyleSheet("QPushButton { font-size: 20px; padding: 10px; }")
+            self.debug_button.clicked.connect(self.open_debug_window)
+            button_layout.addWidget(self.debug_button, 0, Qt.AlignLeft)  # Add to the left of the button layout
 
         # Layout for stats
         stats_layout = QVBoxLayout()
@@ -231,6 +247,11 @@ class GameUI(QWidget):
                     state['is_on_board'] = True
         self.reset_card_states()
 
+    def open_debug_window(self):
+        if self.debug_mode:  # Ensure it opens only in debug mode
+            self.debug_window = DebugWindow(self.game_manager)
+            self.debug_window.show()
+
     def draw_deck(self, painter, deck, x, y, type="hand"):
         num_cards = len(deck.cards)
         card_width = 100  # Standard width for each card
@@ -263,6 +284,10 @@ class GameUI(QWidget):
 
     def draw_card(self, painter, card, x, y, animation_states):
         uuid = card.uuid
+        # Ensure that there is an animation state for every card drawn
+        if uuid not in animation_states:
+            animation_states[uuid] = self.create_card_animation_state(card)
+            print(f"Created animation state for new card with UUID: {uuid}")
         state = animation_states[card.uuid]
         mouse_pos = self.mapFromGlobal(self.cursor().pos())
         card_rect = QRect(x - state['width'] // 2, y - state['height'] // 2, state['width'], state['height'])
@@ -438,6 +463,96 @@ class CustomTooltip(QWidget):
         painter.setFont(self.font)  # Use the font set in __init__
         text_rect = self.rect().adjusted(self.text_margin, self.text_margin, -self.text_margin, -self.text_margin)
         painter.drawText(text_rect, Qt.TextWordWrap, self.text)
+
+class DebugWindow(QWidget):
+    def __init__(self, game_manager):
+        super().__init__()
+        self.game_manager = game_manager
+        self.all_cards = self.game_manager.current_match.player.hand.get_all_cards()
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(100, 100, 400, 800)
+        self.setWindowTitle("Debug Menu")
+
+        layout = QVBoxLayout()
+
+        # Card selector
+        self.card_selector = QComboBox()
+        for card in self.all_cards:
+            self.card_selector.addItem(card.name, card)
+        layout.addWidget(self.card_selector)
+
+        # Add card buttons
+        self.add_card_to_player_button = QPushButton('Add Card to Player')
+        self.add_card_to_player_button.clicked.connect(lambda: self.add_card_to_hand('player'))
+        layout.addWidget(self.add_card_to_player_button)
+
+        self.add_card_to_enemy_button = QPushButton('Add Card to Enemy')
+        self.add_card_to_enemy_button.clicked.connect(lambda: self.add_card_to_hand('enemy'))
+        layout.addWidget(self.add_card_to_enemy_button)
+
+        # Modify stats
+        self.modify_hp_layout = QHBoxLayout()
+        self.hp_label = QLabel('HP:')
+        self.hp_input = QLineEdit()
+        self.modify_hp_layout.addWidget(self.hp_label)
+        self.modify_hp_layout.addWidget(self.hp_input)
+        layout.addLayout(self.modify_hp_layout)
+
+        self.modify_mana_layout = QHBoxLayout()
+        self.mana_label = QLabel('Mana:')
+        self.mana_input = QLineEdit()
+        self.modify_mana_layout.addWidget(self.mana_label)
+        self.modify_mana_layout.addWidget(self.mana_input)
+        layout.addLayout(self.modify_mana_layout)
+
+        self.modify_hp_button = QPushButton('Modify Player HP')
+        self.modify_hp_button.clicked.connect(lambda: self.modify_hp('player'))
+        layout.addWidget(self.modify_hp_button)
+
+        self.modify_enemy_hp_button = QPushButton('Modify Enemy HP')
+        self.modify_enemy_hp_button.clicked.connect(lambda: self.modify_hp('enemy'))
+        layout.addWidget(self.modify_enemy_hp_button)
+
+        self.modify_mana_button = QPushButton('Modify Player Mana')
+        self.modify_mana_button.clicked.connect(lambda: self.modify_mana('player'))
+        layout.addWidget(self.modify_mana_button)
+
+        self.modify_enemy_mana_button = QPushButton('Modify Enemy Mana')
+        self.modify_enemy_mana_button.clicked.connect(lambda: self.modify_mana('enemy'))
+        layout.addWidget(self.modify_enemy_mana_button)
+
+        self.setLayout(layout)
+
+    def add_card_to_hand(self, target):
+        card_index = self.card_selector.currentIndex()
+        card_to_add = copy.copy(self.all_cards[card_index])
+        card_to_add.uuid = uuid.uuid4()  # Generate a new UUID for the card
+        if target == 'player':
+            self.game_manager.current_match.player.hand.cards.append(card_to_add)
+            print(f"Added {card_to_add.name} to player's hand.")
+        elif target == 'enemy':
+            self.game_manager.current_match.enemy.hand.cards.append(card_to_add)
+            print(f"Added {card_to_add.name} to enemy's hand.")
+
+    def modify_hp(self, target):
+        new_hp = int(self.hp_input.text())
+        if target == 'player':
+            self.game_manager.current_match.player.hp = new_hp
+            print(f"Player HP set to {new_hp}.")
+        elif target == 'enemy':
+            self.game_manager.current_match.enemy.hp = new_hp
+            print(f"Enemy HP set to {new_hp}.")
+
+    def modify_mana(self, target):
+        new_mana = int(self.mana_input.text())
+        if target == 'enemy':
+            self.game_manager.current_match.enemy.mana = new_mana
+            print(f"Enemy mana set to {new_mana}.")
+        elif target == 'player':
+            self.game_manager.current_match.player.mana = new_mana
+            print(f"Player mana set to {new_mana}.")
 
 
 if __name__ == '__main__':

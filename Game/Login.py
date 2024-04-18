@@ -57,9 +57,10 @@ class Login(QWidget):
             return False
 
     def launch_game(self, username):
-        self.game_ui = GameUI()
-        if self.role == 'debugger':  # Check the role instead of username
-            self.game_ui.game_manager.enable_debug_mode()
+        if self.role == 'debugger':  # Check the role
+            self.game_ui = GameUI(debug_mode=True)
+        else:
+            self.game_ui = GameUI()
         self.game_ui.show()
         self.close()
 

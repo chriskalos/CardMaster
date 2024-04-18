@@ -53,9 +53,12 @@ class User:
         self.cards_on_board.cards.clear()
 
     def draw_card(self):
+        print(f"AAAAAAAAAAAAAAAAAAAAAAAAA: {len(self.alive_deck.cards)}")
         if len(self.alive_deck.cards) > 0:
             card = self.alive_deck.draw()
             self.hand.cards.append(card)
+        else:
+            print("No cards left in the deck.")
 
     def check_hp(self):
         if self.hp <= 0:

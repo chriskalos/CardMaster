@@ -2,22 +2,19 @@ from User import Player, Enemy
 from Match import Match
 
 class GameManager:
-    def __init__(self):
+    def __init__(self, debug_mode=False):
+        self.debug_mode = debug_mode
         self.current_match_number = 0
         self.tier = 1
         self.player_wins = 0
         self.player_losses = 0
         self.current_match = None
         self.debug_mode = False
-
+        self.player = None
         if self.debug_mode:
             self.player = Player('debug')
         else:
             self.player = Player('player')  # Gives the player a deck and draws 7 cards
-
-    def enable_debug_mode(self):
-        """Enable debug mode."""
-        self.debug_mode = True
 
     def record_win(self):
         """Record a win for the player."""
@@ -34,7 +31,11 @@ class GameManager:
         if self.current_match_number % 2 == 0:
             self.tier += 1
         # Make a new enemy for each round
-        enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'enemy')
+        enemy = None
+        if self.debug_mode:
+            enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'debug')
+        else:
+            enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'enemy')
         self.current_match = Match(self.tier, self.player, enemy)
 
     def get_game_stats(self):
