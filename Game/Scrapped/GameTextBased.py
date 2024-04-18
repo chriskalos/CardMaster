@@ -1,4 +1,4 @@
-from GameManager import GameManager
+from Game.GameManager import GameManager
 
 def display_card(card):
     print(card.get_card_info())
