@@ -4,9 +4,11 @@ from PySide6.QtCore import QTimer, Qt, QRect, QPoint
 from PySide6.QtGui import QPainter, QColor, QFont, QPixmap, QPalette, QTextOption, QFontMetrics
 from GameManager import GameManager
 
+
 class GameUI(QWidget):
     def __init__(self):
         super().__init__()
+
         self.animation_states = {}
         self.initUI()
 
@@ -21,6 +23,10 @@ class GameUI(QWidget):
         self.current_hover_uuid = None  # Track the uuid of the currently hovered card
         self.play_cards_button.clicked.connect(self.play_cards)
         self.continue_button.clicked.connect(self.continue_turn)
+
+    def print_debug(self, message):
+        if self.game_manager.debug_mode:
+            print(message)
 
     def hide_tooltip(self):
         if not any(self.animation_states[i]['tooltip_shown'] for i in self.animation_states):
@@ -74,12 +80,12 @@ class GameUI(QWidget):
 
         # Enemy Stats Label
         self.enemy_stats_label = QLabel(
-            f"Enemy\nHP: {self.game_manager.current_match.enemy.hp}\nMana: {self.game_manager.current_match.enemy.mana}")
+            f"{self.game_manager.current_match.enemy.name}\nHP: {self.game_manager.current_match.enemy.hp}\nMana: {self.game_manager.current_match.enemy.mana}")
         self.enemy_stats_label.setFont(QFont('Arial', 42))
         self.enemy_stats_label.setStyleSheet("color: black;")
 
         # Player Stats Label
-        self.player_stats_label = QLabel(f"Player\nHP: {self.game_manager.current_match.player.hp}\nMana: {self.game_manager.current_match.player.mana}")
+        self.player_stats_label = QLabel(f"{self.game_manager.current_match.player.name}\nHP: {self.game_manager.current_match.player.hp}\nMana: {self.game_manager.current_match.player.mana}")
         self.player_stats_label.setFont(QFont('Arial', 42))
         self.player_stats_label.setStyleSheet("color: black;")
 
@@ -122,19 +128,19 @@ class GameUI(QWidget):
         # For player's cards
         for card in self.game_manager.player.hand.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(True)
-            # print("DEBUG: Player card UUID:", card.uuid)
+            self.print_debug(f"DEBUG: Player card UUID: {card.uuid}")
         # For enemy's cards
         for card in self.game_manager.current_match.enemy.hand.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(False)
-            # print("DEBUG: Enemy card UUID:", card.uuid)
+            self.print_debug("DEBUG: Enemy card UUID: {card.uuid}")
 
         for card in self.game_manager.player.cards_on_board.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(True)
-            # print("DEBUG: Player card on board UUID:", card.uuid)
+            self.print_debug("DEBUG: Player card on board UUID: {card.uuid}")
 
         for card in self.game_manager.current_match.enemy.cards_on_board.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(False)
-            # print("DEBUG: Enemy card on board UUID:", card.uuid)
+            self.print_debug("DEBUG: Enemy card on board UUID: {card.uuid}")
 
     def create_card_animation_state(self, is_player_card):
         return {
@@ -169,7 +175,7 @@ class GameUI(QWidget):
         if event.button() == Qt.LeftButton:
             clicked_uuid = None
             for uuid, state in self.animation_states.items():
-                print("DEBUG: Checking card", uuid)
+                self.print_debug(f"DEBUG: Checking card {uuid}")
                 card_rect = QRect(state['x'] - state['width'] // 2, state['y'] - state['height'] // 2, state['width'],
                                   state['height'])
                 if card_rect.contains(event.pos()) and state['player_card'] and not state['is_on_board']:
@@ -183,9 +189,9 @@ class GameUI(QWidget):
     def handle_card_click(self, uuid):
         card = self.get_card_by_uuid(uuid)
         if self.animation_states[uuid]['clicked']:
-            print(f"DEBUG handle_card_click: Card {card.name} is clicked!")
+            self.print_debug(f"DEBUG handle_card_click: Card {card.name} is clicked!")
         else:
-            print(f"DEBUG handle_card_click: Card {card.name} is unclicked!")
+            self.print_debug(f"DEBUG handle_card_click: Card {card.name} is unclicked!")
 
     def reset_card_states(self):
         for state in self.animation_states.values():
@@ -213,7 +219,7 @@ class GameUI(QWidget):
 
     def continue_turn(self):
         # Submit the cards on the board and go to the effects phase of the battle
-        print("Phase:", self.game_manager.current_match.phase.name)
+        self.print_debug(f"Phase: {self.game_manager.current_match.phase.name}")
         self.reset_card_states()
         self.game_manager.current_match.cycle_phase()
 
@@ -257,7 +263,6 @@ class GameUI(QWidget):
 
     def draw_card(self, painter, card, x, y, animation_states):
         uuid = card.uuid
-        # print(f"DEBUG draw_card (VISUAL): Drawing card {card.uuid} {card.name} at ({x}, {y})")
         state = animation_states[card.uuid]
         mouse_pos = self.mapFromGlobal(self.cursor().pos())
         card_rect = QRect(x - state['width'] // 2, y - state['height'] // 2, state['width'], state['height'])

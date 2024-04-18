@@ -5,8 +5,9 @@ from Card import Deck
 
 
 class User:
-    def __init__(self):
-        self.name = ""
+    def __init__(self, name: str, mode: str):
+        self.name = name
+        self.mode = mode
         self.hp = 10
         self.mana = 0  # Mana = current tier + 2, given by Match
         self.alive_deck = Deck()
@@ -24,22 +25,23 @@ class User:
             self.mana -= card.tier
             self.cards_on_board.cards.append(card)
             self.hand.cards.remove(card)
+            self.print_debug(f"play_card: Playing card {card.name} with tier {card.tier}.")
+            self.print_debug(f"play_card: Hand before playing card with UUID {card.uuid}:")
+            self.print_debug(str(self.hand))
+            self.print_debug(f"play_card: Cards on board before playing card with UUID {card.uuid}:")
+            self.print_debug(str(self.cards_on_board))
+            self.print_debug(f"play_card: Hand after playing card with UUID {card.uuid}:")
+            self.print_debug(str(self.hand))
+            self.print_debug(f"play_card: Cards on board after playing card with UUID {card.uuid}:")
+            self.print_debug(str(self.cards_on_board))
+            self.print_debug(f"play_card: Card {card.name} played. Mana remaining: {self.mana}.")
             return True
         else:
             print("No mana to play a card.")
             return False
-        # print(f"DEBUG play_card: Playing card {card.name} with tier {card.tier}.")
-        # print(f"DEBUG play_card: Hand before playing card with UUID {card.uuid}:")
-        # print(self.hand)
-        # print(f"DEBUG play_card: Cards on board before playing card with UUID {card.uuid}:")
-        # print(self.cards_on_board)
-        # print(f"DEBUG play_card: Hand after playing card with UUID {card.uuid}:")
-        # print(self.hand)
-        # print(f"DEBUG play_card: Cards on board after playing card with UUID {card.uuid}:")
-        # print(self.cards_on_board)
-        # print(f"DEBUG play_card: Card {card.name} played. Mana remaining: {self.mana}.")
 
-    def sacrifice_card(self, card): # Sacrifice 1 HP to send all cards on the board to the dead deck and redraw as many as they are from the alive deck
+    # Sacrifice 1 HP to send all cards on the board to the dead deck and redraw as many as they are from the alive deck
+    def sacrifice_card(self, card):
         # Find how many cards are on the board
         num_cards = len(self.cards_on_board.cards)
         # For each card on the board, lose 1 HP and send it to the dead deck
@@ -65,11 +67,14 @@ class User:
         new_card.uuid = uuid.uuid4()
         return new_card
 
+    def print_debug(self, message: str):
+        if self.mode == "debug":
+            print(f"DEBUG User {self.name}: {message}")
     
 
 class Player(User):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str, mode: str = 'player'):
+        super().__init__(name, mode)
 
         self.alive_deck.owner = self
         self.dead_deck.owner = self
@@ -85,8 +90,8 @@ class Player(User):
     
 
 class Enemy(User):
-    def __init__(self, current_match: int, current_tier: int):
-        super().__init__()
+    def __init__(self, current_match: int, current_tier: int, name: str = 'Enemy', mode: str = 'enemy'):
+        super().__init__(name, mode)
 
         self.alive_deck.owner = self
         self.dead_deck.owner = self
@@ -94,7 +99,7 @@ class Enemy(User):
 
         tier_score = 2 + current_match * 5
         # The enemy should always have the maximum number of cards possible for the current match, as if they are a player buying every card in the store every round.
-        print(f"DEBUG: Generating enemy deck with tier score {tier_score}.")
+        self.print_debug(f"Generating enemy deck with tier score {tier_score}.")
         current_tier_score = 0
         deck = []
         # The enemy gets 2 cards of the current tier, 2 cards of the previous tier, and then random cards until they reach the deck size indicated by tier_score.
@@ -102,21 +107,21 @@ class Enemy(User):
             current_card = self.create_new_card(current_tier, current_tier)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
-            print(f"DEBUG enemy.__init__: Added card {current_card.name} with tier {current_card.tier}.")
-            print(f"DEBUG enemy.__init__: Current tier score: {current_tier_score}.")
+            self.print_debug(f"Added card {current_card.name} with tier {current_card.tier}.")
+            self.print_debug(f"Current tier score: {current_tier_score}.")
         for i in range(2):
             current_card = self.create_new_card(current_tier - 1, current_tier -1)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
-            print(f"DEBUG enemy.__init__: Added card {current_card.name} with tier {current_card.tier}.")
-            print(f"DEBUG enemy.__init__: Current tier score: {current_tier_score}.")
+            self.print_debug(f"Added card {current_card.name} with tier {current_card.tier}.")
+            self.print_debug(f"Current tier score: {current_tier_score}.")
         while current_tier_score < tier_score:
             current_card = self.create_new_card(1, current_tier)
             self.alive_deck.cards.append(current_card)
             current_tier_score += current_card.tier
-            print(f"DEBUG enemy.__init__: Added card {current_card.name} with tier {current_card.tier}.")
-            print(f"DEBUG enemy.__init__: Current tier score: {current_tier_score}.")
-            print(f"DEBUG enemy.__init__: Enemy deck generated with {len(self.alive_deck.cards)} cards.")
+            self.print_debug(f"Added card {current_card.name} with tier {current_card.tier}.")
+            self.print_debug(f"Current tier score: {current_tier_score}.")
+            self.print_debug(f"Enemy deck generated with {len(self.alive_deck.cards)} cards.")
 
     def play_turn(self):
         # Sort the hand by tier in descending order to try playing powerful cards first

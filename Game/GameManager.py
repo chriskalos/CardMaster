@@ -3,12 +3,21 @@ from Match import Match
 
 class GameManager:
     def __init__(self):
-        self.player = Player() # Gives the player a deck and draws 7 cards
         self.current_match_number = 0
         self.tier = 1
         self.player_wins = 0
         self.player_losses = 0
         self.current_match = None
+        self.debug_mode = False
+
+        if self.debug_mode:
+            self.player = Player('debug')
+        else:
+            self.player = Player('player')  # Gives the player a deck and draws 7 cards
+
+    def enable_debug_mode(self):
+        """Enable debug mode."""
+        self.debug_mode = True
 
     def record_win(self):
         """Record a win for the player."""
@@ -25,13 +34,8 @@ class GameManager:
         if self.current_match_number % 2 == 0:
             self.tier += 1
         # Make a new enemy for each round
-        enemy = Enemy(self.current_match_number, self.tier)
+        enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'enemy')
         self.current_match = Match(self.tier, self.player, enemy)
-
-        # if self.current_match.phase.name == "DRAW":
-        #     self.current_match.cycle_phase()
-        # else:
-        #     print("DEBUG Error start_match: Match did not start in DRAW phase.")
 
     def get_game_stats(self):
         """Return a string of the current game statistics."""
