@@ -1,5 +1,7 @@
+import copy
 import os
 import random
+import uuid
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Optional
@@ -139,7 +141,8 @@ class Card(ABC):
         """Method to perform an attack on a target"""
         # Check if the target is the enemy player or a card
         target = None
-        if enemy_board.cards[position] is None:
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
             target = enemy_board.owner
         else:
             target = enemy_board.cards[position]
@@ -222,7 +225,13 @@ class Pew(Card):
             self.frozen = False
             return
         print(f"DEBUG Pew: Deal 2 damage to the unit in front of it")
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= 2
         # target.check_hp()
@@ -256,7 +265,13 @@ class PewPew(Card):
             self.frozen = False
             return
         print(f"DEBUG Pew Pew: Deal 2 damage to the opposing unit")
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= 2
         # target.check_hp()
@@ -269,7 +284,13 @@ class Boom(Card):
             print(f"DEBUG Boom: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= len(friendly_board.cards)
         # target.check_hp()
@@ -297,7 +318,13 @@ class Cablooey(Card):
             print(f"DEBUG Cablooey: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= target.hp // 2
         # target.check_hp()
@@ -309,7 +336,13 @@ class Catapulty(Card):
             print(f"DEBUG Catapulty: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if not target.shield:
             target.hp -= target.attack
         # target.check_hp()
@@ -340,7 +373,13 @@ class TimeLord(Card):
             print(f"DEBUG Time Lord: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         self.turns_active += 1
         if self.temp_enemy is target and self.turns_active == 1:
             target.hp = 0
@@ -357,7 +396,13 @@ class BigShot(Card):
             self.frozen = False
             return
         total_attack = 0
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         for card in friendly_board.cards:
             total_attack += card.attack
         if not target.shield:
@@ -371,7 +416,13 @@ class IceCube(Card):
             print(f"DEBUG Ice Cube: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         target.frozen = True
 
 class Cheerleader(Card):
@@ -393,7 +444,13 @@ class HungryAssassin(Card):
             print(f"DEBUG Hungry Assassin: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if target.shield:
             print(f"DEBUG Hungry Assassin: Target {target.name} has a shield and takes no damage.")
             target.shield = False
@@ -410,7 +467,13 @@ class Flea(Card):
             print(f"DEBUG Flea: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         target.hp = 0
         # We do not want the target to check its HP we actually want it to just go to 0 HP
 
@@ -423,7 +486,13 @@ class BigGunga(Card):
             print(f"DEBUG Big Gunga: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         if not target.shield:
             self.perform_attack(position, enemy_board)
             if target.hp <= 0:
@@ -441,7 +510,13 @@ class Sender(Card):
             print(f"DEBUG Sender: Target {self.name} is frozen and cannot attack.")
             self.frozen = False
             return
-        target = enemy_board.cards[position]
+        # Check if the target is the enemy player or a card
+        target = None
+        # If the position is out of bounds, attack the enemy player
+        if position >= len(enemy_board.cards):
+            target = enemy_board.owner
+        else:
+            target = enemy_board.cards[position]
         left = friendly_board.cards[position-1]
         if not target.shield:
             target.hp -= left.attack + left.hp
@@ -455,7 +530,10 @@ class RoyalSummoner(Card):
             self.frozen = False
             return
         if position > 0:
-            left = friendly_board.cards[position-1]
+            left = copy.copy(friendly_board.cards[position-1])
+            print(f"DEBUG Royal Summoner: Summoned {left.name}.")
+            left.uuid = uuid.uuid4()
+            print(f"DEBUG Royal Summoner: Left's UUID: {left.uuid}.")
             friendly_board.cards.insert(position+1, left)
 
 class Copycat(Card):

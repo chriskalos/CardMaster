@@ -16,12 +16,16 @@ class User:
         self.hand = Deck()
         self.hand_size = 5
 
+        # Status effects for cards to work
+        self.shield = False
+        self.frozen = False
+
     def kill_card(self, card):
         self.dead_deck.cards.append(card)
         self.alive_deck.cards.remove(card)
 
     def play_card(self, card):
-        if self.mana > 0:
+        if self.mana >= card.tier:
             self.mana -= card.tier
             self.cards_on_board.cards.append(card)
             self.hand.cards.remove(card)
@@ -53,7 +57,6 @@ class User:
         self.cards_on_board.cards.clear()
 
     def draw_card(self):
-        print(f"AAAAAAAAAAAAAAAAAAAAAAAAA: {len(self.alive_deck.cards)}")
         if len(self.alive_deck.cards) > 0:
             card = self.alive_deck.draw()
             self.hand.cards.append(card)

@@ -10,6 +10,8 @@ class Phase(Enum):
 
 class Match:
     def __init__(self, tier: int, player: Player, enemy: Enemy):
+        self.winner = None
+        self.match_over = False
         self.tier = tier
         self.player = player
         self.enemy = enemy
@@ -28,9 +30,9 @@ class Match:
 
     def activate_effects(self):
         # Take the maximum of player's cards on board vs enemy's cards on board
-        max_hands = max(len(self.player.cards_on_board.cards), len(self.enemy.cards_on_board.cards))
-        for i in range(max_hands):
-            if i < max_hands:
+        self.max_hands = max(len(self.player.cards_on_board.cards), len(self.enemy.cards_on_board.cards))
+        for i in range(self.max_hands):
+            if i < self.max_hands:
                 # If there is a card, activate the effect
                 if i < len(self.player.cards_on_board.cards):
                     print(f"DEBUG: Activating player card {self.player.cards_on_board.cards[i].name}.")
@@ -40,6 +42,7 @@ class Match:
                     print(f"DEBUG: Activating enemy card {self.enemy.cards_on_board.cards[i].name}.")
                     self.enemy.cards_on_board.cards[i].activate_effect(i, self.enemy.cards_on_board,
                                                                        self.player.cards_on_board)
+                self.max_hands = max(len(self.player.cards_on_board.cards), len(self.enemy.cards_on_board.cards))
 
         # self.cycle_phase()
 
@@ -120,5 +123,23 @@ class Match:
             self.perform_attacks()
             self.update_mana()
             self.turn += 1
+            self.check_win_conditions()
         else:
             print("DEBUG: ERROR: Phase is not a valid phase.")
+
+    def check_win_conditions(self):
+        if self.player.hp <= 0 and self.enemy.hp <= 0:
+            print("DEBUG: Draw.")
+            self.end_match(None)
+        elif self.enemy.hp <= 0:
+            print("DEBUG: Player has won.")
+            self.player_score += 1
+            self.end_match(self.player)
+        elif self.player.hp <= 0:
+            print("DEBUG: Player has lost.")
+            self.enemy_score += 1
+            self.end_match(self.enemy)
+
+    def end_match(self, winner):
+        self.winner = winner
+        self.match_over = True

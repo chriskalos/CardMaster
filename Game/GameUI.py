@@ -19,6 +19,7 @@ class GameUI(QWidget):
         else:
             self.game_manager = GameManager()
 
+        self.game_over = False
         self.animation_states = {}
         self.initUI()
 
@@ -148,15 +149,15 @@ class GameUI(QWidget):
         # For enemy's cards
         for card in self.game_manager.current_match.enemy.hand.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(False)
-            self.print_debug("DEBUG: Enemy card UUID: {card.uuid}")
+            self.print_debug(f"DEBUG: Enemy card UUID: {card.uuid}")
 
         for card in self.game_manager.player.cards_on_board.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(True)
-            self.print_debug("DEBUG: Player card on board UUID: {card.uuid}")
+            self.print_debug(f"DEBUG: Player card on board UUID: {card.uuid}")
 
         for card in self.game_manager.current_match.enemy.cards_on_board.cards:
             self.animation_states[card.uuid] = self.create_card_animation_state(False)
-            self.print_debug("DEBUG: Enemy card on board UUID: {card.uuid}")
+            self.print_debug(f"DEBUG: Enemy card on board UUID: {card.uuid}")
 
     def create_card_animation_state(self, is_player_card):
         return {
@@ -172,20 +173,27 @@ class GameUI(QWidget):
     def update_stats(self):
         self.enemy_stats_label.setText(f"Enemy\nHP: {self.game_manager.current_match.enemy.hp}\nMana: {self.game_manager.current_match.enemy.mana}")
         self.player_stats_label.setText(f"Player\nHP: {self.game_manager.current_match.player.hp}\nMana: {self.game_manager.current_match.player.mana}")
+        if self.game_manager.check_match():
+            self.game_over_screen()
 
     def interpolate(self, value, target, speed):
         return value + (target - value) * speed
 
     def paintEvent(self, event):
         painter = QPainter(self)
-
-        self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 + 50)
-        self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8,
-                       self.height() // 4 - 50)
-
-        self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 75, "board")
-        self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8, self.height() // 2 - 80, "board")
-        self.update_stats()
+        if self.game_over:
+            painter.setFont(QFont('Arial', 48))
+            painter.drawText(self.rect(), Qt.AlignCenter, f"Game Over!\n{self.game_manager.current_match.winner.name} wins!")
+        else:
+            # Normal game drawing happens here
+            self.draw_deck(painter, self.game_manager.player.hand, self.width() // 8, self.height() * 3 // 4 + 50)
+            self.draw_deck(painter, self.game_manager.current_match.enemy.hand, self.width() // 8,
+                           self.height() // 4 - 50)
+            self.draw_deck(painter, self.game_manager.player.cards_on_board, self.width() // 8, self.height() // 2 + 75,
+                           "board")
+            self.draw_deck(painter, self.game_manager.current_match.enemy.cards_on_board, self.width() // 8,
+                           self.height() // 2 - 80, "board")
+            self.update_stats()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -429,6 +437,20 @@ class GameUI(QWidget):
                 state['tooltip_shown'] = False  # Mark the tooltip as no longer shown for this card
                 if self.current_hover_uuid == uuid:  # Check if this is the last card hovered over
                     self.hover_timer.start(100)  # Delay before hiding tooltip to check if another card is hovered
+
+    def game_over_screen(self):
+        self.game_over = True
+        # Clear UI elements
+        self.enemy_stats_label.hide()
+        self.player_stats_label.hide()
+        self.play_cards_button.hide()
+        self.continue_button.hide()
+        if self.debug_mode:
+            self.debug_button.hide()
+        # Set background to game over screen (actually repurposed title screen)
+        self.bg_pixmap = QPixmap('img/title screen.png')
+        self.applyBackground()
+        self.update()  # Ensure the widget repaints after these changes
 
 class CustomTooltip(QWidget):
     def __init__(self, parent=None):

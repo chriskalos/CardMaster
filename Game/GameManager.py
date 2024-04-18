@@ -38,6 +38,21 @@ class GameManager:
             enemy = Enemy(self.current_match_number, self.tier, 'Enemy', 'enemy')
         self.current_match = Match(self.tier, self.player, enemy)
 
+    def check_match(self):
+        """Check if the match is over."""
+        if self.current_match.match_over:
+            self.end_match()
+            return True
+        else:
+            return False
+
+    def end_match(self):
+        """End the current match."""
+        if self.current_match.winner == self.player:
+            self.record_win()
+        else:
+            self.record_loss()
+
     def get_game_stats(self):
         """Return a string of the current game statistics."""
         stats = (
